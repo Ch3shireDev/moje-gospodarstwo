@@ -1,0 +1,15 @@
+{
+  "name": "zatrzymaj-wode-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Backend: skleja Open-Meteo, IMGW-PIB i ULDK w raport dla rolnika. Zero zależności.",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

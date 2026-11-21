@@ -1,0 +1,41 @@
+[
+  {
+    "id": "Sk20261117050946255",
+    "nazwa_zdarzenia": "Silny wiatr",
+    "stopien": "1",
+    "prawdopodobienstwo": "70",
+    "obowiazuje_do": "2026-11-18 00:00:00",
+    "obowiazuje_od": "2026-11-17 19:00:00",
+    "opublikowano": "2026-11-17 06:09:00",
+    "tresc": "Miejscami prognozuje się wystąpienie silnego wiatru o średniej prędkości do 40 km/h, w porywach do 75 km/h, z południowego zachodu i południa.",
+    "komentarz": "Brak.",
+    "biuro": "Centralne Biuro Prognoz Meteorologicznych w Warszawie",
+    "teryt": ["1209", "1211", "1213", "1215", "1218", "2402", "2417", "2461", "2403", "1217", "1207"]
+  },
+  {
+    "id": "Sk20261117212132804",
+    "nazwa_zdarzenia": "Silny wiatr",
+    "stopien": "1",
+    "prawdopodobienstwo": "70",
+    "obowiazuje_do": "2026-11-18 10:00:00",
+    "obowiazuje_od": "2026-11-18 05:00:00",
+    "opublikowano": "2026-11-17 22:21:00",
+    "tresc": "Prognozuje się wystąpienie silnego wiatru o średniej prędkości do 40 km/h, w porywach do około 70 km/h, z południowego zachodu.",
+    "komentarz": "Brak.",
+    "biuro": "Centralne Biuro Prognoz Meteorologicznych w Warszawie",
+    "teryt": ["0212", "0206", "0207", "0208", "0210", "0221", "0261", "0265"]
+  },
+  {
+    "id": "Sk20261117050943098",
+    "nazwa_zdarzenia": "Silny wiatr",
+    "stopien": "1",
+    "prawdopodobienstwo": "70",
+    "obowiazuje_do": "2026-11-17 23:00:00",
+    "obowiazuje_od": "2026-11-17 20:00:00",
+    "opublikowano": "2026-11-17 06:09:00",
+    "tresc": "Miejscami prognozuje się wystąpienie silnego wiatru o średniej prędkości do 40 km/h, w porywach do 75 km/h, z południowego zachodu. ",
+    "komentarz": "Brak.",
+    "biuro": "Centralne Biuro Prognoz Meteorologicznych w Warszawie",
+    "teryt": ["0207", "0210", "0212", "0221", "0225", "0261", "0265", "0206"]
+  }
+]

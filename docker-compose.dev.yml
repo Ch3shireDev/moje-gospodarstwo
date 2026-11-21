@@ -1,0 +1,32 @@
+# Tryb deweloperski z hot reloadem (front i backend z katalogów na dysku):
+#   docker compose -f docker-compose.dev.yml up
+# Front: http://localhost:5173   API: http://localhost:8787
+services:
+  server:
+    image: ${NODE_IMAGE:-node:22-alpine}
+    working_dir: /app/server
+    command: node --watch src/index.js
+    volumes:
+      - ./server:/app/server
+    ports:
+      - "8787:8787"
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-claude-haiku-5-5}
+
+  client:
+    image: ${NODE_IMAGE:-node:22-alpine}
+    working_dir: /app/client
+    command: sh -c "npm install --no-audit --no-fund && npx vite --host 0.0.0.0"
+    volumes:
+      - ./client:/app/client
+      - client_node_modules:/app/client/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      API_URL: http://server:8787
+    depends_on:
+      - server
+
+volumes:
+  client_node_modules:

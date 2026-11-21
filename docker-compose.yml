@@ -1,0 +1,29 @@
+# Jedna komenda:  docker compose up --build
+# Aplikacja:      http://localhost:8787
+# Zmienne (PORT, ANTHROPIC_API_KEY) compose czyta sam z pliku .env obok, jeśli istnieje.
+services:
+  app:
+    build:
+      context: .
+      args:
+        # Przy 429 z Docker Hub: NODE_IMAGE=mirror.gcr.io/library/node:22-alpine
+        NODE_IMAGE: ${NODE_IMAGE:-node:22-alpine}
+    image: zatrzymaj-wode:latest
+    container_name: zatrzymaj-wode
+    ports:
+      - "${PORT:-8787}:8787"
+    environment:
+      # Opcjonalnie: podsumowania pisane przez LLM. Puste = szablon.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-claude-haiku-5-5}
+      # Open-Meteo: klucz planu komercyjnego albo adresy własnej instancji (patrz README).
+      OPEN_METEO_API_KEY: ${OPEN_METEO_API_KEY:-}
+      OPEN_METEO_FORECAST_URL: ${OPEN_METEO_FORECAST_URL:-}
+      OPEN_METEO_ARCHIVE_URL: ${OPEN_METEO_ARCHIVE_URL:-}
+    volumes:
+      # Cache danych archiwalnych przeżywa przebudowę kontenera (mniej zapytań do Open-Meteo).
+      - app_cache:/app/server/.cache
+    restart: unless-stopped
+
+volumes:
+  app_cache:

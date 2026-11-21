@@ -1,0 +1,7 @@
+[
+  { "id_stacji": "12330", "stacja": "Poznań", "data_pomiaru": "2026-11-17", "godzina_pomiaru": "21", "temperatura": "4.8", "predkosc_wiatru": "3", "kierunek_wiatru": "140", "wilgotnosc_wzgledna": "95.2", "suma_opadu": "0.7", "cisnienie": "986.6" },
+  { "id_stacji": "12418", "stacja": "Leszno", "data_pomiaru": "2026-11-17", "godzina_pomiaru": "21", "temperatura": "6.6", "predkosc_wiatru": "2", "kierunek_wiatru": "190", "wilgotnosc_wzgledna": "95.9", "suma_opadu": "0.2", "cisnienie": "987.2" },
+  { "id_stacji": "12550", "stacja": "Częstochowa", "data_pomiaru": "2026-11-17", "godzina_pomiaru": "21", "temperatura": "6.9", "predkosc_wiatru": "2", "kierunek_wiatru": "200", "wilgotnosc_wzgledna": null, "suma_opadu": "0.5", "cisnienie": "988.8" },
+  { "id_stacji": "12650", "stacja": "Kasprowy Wierch", "data_pomiaru": "2026-11-17", "godzina_pomiaru": "21", "temperatura": "0.4", "predkosc_wiatru": "14", "kierunek_wiatru": "280", "wilgotnosc_wzgledna": "97.8", "suma_opadu": "1.4", "cisnienie": null },
+  { "id_stacji": "12625", "stacja": "Zakopane", "data_pomiaru": "2026-11-17", "godzina_pomiaru": "21", "temperatura": "9.5", "predkosc_wiatru": "5", "kierunek_wiatru": "250", "wilgotnosc_wzgledna": "68.7", "suma_opadu": "0.8", "cisnienie": null }
+]

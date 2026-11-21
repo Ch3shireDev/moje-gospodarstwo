@@ -1,0 +1,17 @@
+{
+  "name": "zatrzymaj-wode",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hackathon KOWR: bilans wody w glebie, ostrzeżenia IMGW i rekomendacje dla rolnika.",
+  "scripts": {
+    "setup": "npm --prefix client install",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "test": "npm --prefix server test",
+    "build": "npm --prefix client run build",
+    "start": "node server/src/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
