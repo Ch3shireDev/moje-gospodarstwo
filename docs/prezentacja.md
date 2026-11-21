@@ -62,7 +62,7 @@ Notatki: podkreślić "dla swojej działki" – to sedno zadania KOWR.
 <div class="cols">
 <div>
 
-1. Wpisz **numer działki** albo kliknij ją na mapie
+1. Wpisz **miejscowość albo numer działki**, kliknij pole na mapie
 2. Wybierz **uprawę** (i datę – dziś albo do 10 lat wstecz)
 3. **Analizuj** → raport w 10–30 s
 
@@ -76,8 +76,8 @@ Działa w przeglądarce na komputerze i telefonie (PWA), bez instalacji i bez ko
 1. Woda na Twoim polu – jedno słowo, jedno zdanie
 2. Dlaczego? – przyczyny z liczbami
 3. Co zrobić? – **zatrzymaj wodę → uprawa → podlewanie**
-4. Szczegóły, ograniczenia, źródła
-5. PDF do wydruku
+4. Które uprawy tu rzadziej cierpią na suszę
+5. Szczegóły, ograniczenia, źródła, PDF
 
 </div>
 </div>
@@ -175,7 +175,7 @@ Notatki: tu przejść do demo na żywo (działka wskazana przez jury).
 - Każdy raport ma **poziom pewności** i listę **ograniczeń**: pogoda z modelu, a nie z pola; brak bezchmurnej sceny; rowy z niekompletnej mapy; zapasowe źródło danych.
 - **Każda rada ma „Skąd to wiemy”**: dane i źródło, z których wynika.
 - Brak danych pokazujemy wprost, bez pozornej precyzji. Raport powstaje nawet przy awarii części źródeł.
-- **27 testów** na prawdziwych odpowiedziach API (ULDK, IUNG, IMGW, NMT, SoilGrids, NASA POWER, Sentinel-2); ET0 sprawdzone na przykładzie z podręcznika FAO-56.
+- **33 testy** na prawdziwych odpowiedziach API (ULDK, IUNG, IMGW, NMT, SoilGrids, NASA POWER, Sentinel-2); ET0 sprawdzone na przykładzie z podręcznika FAO-56.
 - AI tylko opcjonalnie przepisuje gotowe liczby na prosty język – **nic nie liczy**.
 
 ---

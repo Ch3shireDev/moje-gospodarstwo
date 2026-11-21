@@ -8,6 +8,7 @@ Rolnik wskazuje działkę i uprawę, a aplikacja w kilkanaście sekund pobiera p
 
 ## Co widzi użytkownik
 
+0. **Strona startowa** – 3 kroki i wyszukiwarka. Wpisanie miejscowości, gminy, powiatu albo województwa („Ciechanów”, „pomorskie”) przenosi na mapę w to miejsce (Nominatim, OpenStreetMap).
 1. **Mapa** z panelem „Wybierz działkę”. Klik w pole albo wpisanie numeru (np. `302502_2.0009.387` lub „Sulęcin 387”) pokazuje obrys działki i jej numer – jeszcze bez analizy.
 2. Wybór **uprawy** (co rośnie na polu) i ewentualnie **daty** (domyślnie dziś, można cofnąć się do 10 lat).
 3. Przycisk **„Analizuj działkę N”** – po 10–30 sekundach otwiera się raport pod własnym adresem (`/raport?dzialka=…&data=…&uprawa=…`), który można odświeżyć albo komuś wysłać.
@@ -15,6 +16,8 @@ Rolnik wskazuje działkę i uprawę, a aplikacja w kilkanaście sekund pobiera p
    - **Woda na Twoim polu** – jedno słowo („Susza”, „Prawie susza”, „Sucho”, „Woda w normie”, „Mokro”) i jedno zdanie,
    - **Dlaczego?** – przyczyny potwierdzone danymi (mało deszczu, lekka gleba, spływ po stoku, rów odprowadzający wodę…),
    - **Co zrobić?** – rady w trzech grupach: zatrzymaj wodę → uprawa → podlewanie; każda z rozwijanym „Dlaczego i jak?”,
+   - **Co tu rośnie najłatwiej przy suszy?** – 14 upraw z tabel IUNG uszeregowanych według tego, w ilu z 10 sezonów miałyby suszę na tej glebie,
+   - **Kiedy sprawdzić ponownie** – 2–3 terminy w roku (przedwiośnie, przed siewem, przed zbiorem),
    - **Szczegóły** (zwinięte) – liczby, 10 lat, zdjęcie satelitarne, teren, ograniczenia, źródła.
 5. **PDF** do pobrania – ten sam raport na A4, z mapką działki, wykresami i źródłami.
 
@@ -50,6 +53,7 @@ flowchart LR
 3. **Ocena.** Klimatyczny bilans wodny z 61 dni (deszcz minus parowanie) porównany z **progiem suszy IUNG** dla tej uprawy i gleby, z **tym samym okresem w 10 poprzednich latach** i z **zapasem wody w strefie korzeni**. Satelita tylko potwierdza – nie rozstrzyga sam.
 4. **Przyczyny.** Reguły sprawdzają, co dane potwierdzają: deszcz poniżej normy, upał, lekka gleba, mało próchnicy, spadek terenu, rów przy działce, faza uprawy, słabsza roślinność.
 5. **Rady.** Też reguły, ale dopasowane do działki: rów 20 m od pola → „zatrzymaj wodę w rowie”, obniżenie na polu → „nie osuszaj go” (punkt na mapie), stok → „orz w poprzek”. Podlewanie tylko w sezonie i tylko gdy w strefie korzeni zabrakło wody łatwo dostępnej; dawka z bilansu, termin z prognozy.
+5a. **Porównanie upraw.** Bilans wodny okresów IUNG z 10 sezonów liczymy raz i przykładamy do progów każdej z 14 upraw dla tej kategorii gleby. Jako zamiennik podsuwamy tylko uprawy polowe, które miały suszę co najmniej o 2 sezony rzadziej. Łąk nie porównujemy.
 6. **Niepewność.** Każdy raport wylicza poziom pewności i listę ograniczeń (np. zapasowe źródło pogody, brak bezchmurnego zdjęcia, rowy z niekompletnej mapy).
 7. **Podsumowanie** jest składane z szablonu. Opcjonalnie model językowy (Claude) przepisuje gotowe liczby i rady na 2–3 zdania – niczego nie liczy i nie wymyśla.
 

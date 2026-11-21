@@ -147,10 +147,21 @@ export default function MapView({ point, parcelGeometry, markers = [], onPick, f
     }
   }, [ready, parcelGeometry]);
 
-  // Przelot (np. po geolokalizacji).
+  // Przelot (np. po wyszukaniu miejscowości). Na ukrytej mapie czeka, aż mapa będzie widoczna.
+  // focus.bbox = [zach, płd, wsch, płn] – dopasowanie do zasięgu (gmina, powiat, województwo).
+  // focus.force – leć także wtedy, gdy na mapie jest obrys działki (nowe wyszukiwanie miejsca).
+  const focusDoneRef = useRef(null);
   useEffect(() => {
-    if (focus && mapRef.current && visible && !parcelRef.current) mapRef.current.flyTo({ center: [focus.lon, focus.lat], zoom: focus.zoom ?? 13, speed: 1.6 });
-  }, [focus]);
+    const map = mapRef.current;
+    if (!focus || !map || !ready || !visible || focusDoneRef.current === focus) return;
+    if (parcelRef.current && !focus.force) return;
+    focusDoneRef.current = focus;
+    map.resize();
+    if (focus.bbox) {
+      const [w, s, e, nn] = focus.bbox;
+      map.fitBounds([[w, s], [e, nn]], { padding: 40, maxZoom: 15, duration: 1200 });
+    } else map.flyTo({ center: [focus.lon, focus.lat], zoom: focus.zoom ?? 13, speed: 1.6 });
+  }, [focus, ready, visible]);
 
   useEffect(() => {
     if (!ready) return;

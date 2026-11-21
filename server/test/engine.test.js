@@ -360,3 +360,53 @@ test('Wody z kafla OpenFreeMap (MVT): dekoder, rzeka Warta, odległość od dzia
   const warta = w.items.find((i) => i.name === 'Warta');
   assert.ok(warta && warta.distM < 200, `Warta ${warta?.distM} m`);
 });
+
+test('Porównanie upraw: te same progi IUNG dla każdej uprawy, zamienniki tylko polowe, łąka bez porównania', () => {
+  // Suche lipce i sierpnie co trzeci rok – uprawy z progami latem (kukurydza, ziemniak) cierpią częściej.
+  const days = synthDays({
+    rain: (d) => (['07', '08'].includes(d.slice(5, 7)) ? (Number(d.slice(0, 4)) % 3 === 0 ? 0.2 : 1.2) : 2.2),
+    et0: (d) => (['05', '06', '07', '08'].includes(d.slice(5, 7)) ? 4 : 1.5),
+  });
+  const common = { date: '2025-10-15', today: '2026-11-21', soil: { category: 'I', source: 'iung' }, weather: { days, sources: [], notes: [] } };
+  const a = buildAssessment({ ...common, cropId: 'ziemniak' });
+  const cmp = a.cropComparison;
+  assert.ok(cmp.available);
+  assert.equal(cmp.seasons, 10);
+  assert.equal(cmp.rows.length, 14);
+  assert.ok(cmp.rows.find((r) => r.key === 'burak').notSuited, 'burak na glebie kat. I jest niewskazany wg IUNG');
+  assert.equal(cmp.rows.at(-1).key, 'burak');
+  assert.ok(cmp.current.key === 'ziemniak' && cmp.current.droughtYears > 0);
+  for (let i = 1; i < cmp.rows.length - 1; i++) assert.ok(cmp.rows[i - 1].droughtYears <= cmp.rows[i].droughtYears, 'posortowane od najmniejszego ryzyka');
+  assert.ok(cmp.safer.length && cmp.safer.every((r) => !r.perennial && r.droughtYears <= cmp.current.droughtYears - 2));
+  const act = a.recommendations.agrotechnika.find((x) => x.id === 'agro-wybor-uprawy');
+  assert.ok(act && !/truskawki|chmiel|drzewa/.test(act.title));
+  assert.equal(cmp.rows.find((r) => r.key === 'warzywa').fao.mmFrom, 350); // kapusta wg FAO, tab. 14
+
+  const tuz = buildAssessment({ ...common, cropId: 'uzytki_zielone' });
+  assert.equal(tuz.cropComparison.available, false);
+  const noSoil = buildAssessment({ ...common, cropId: 'ziemniak', soil: { category: null, source: 'soilgrids' } });
+  assert.equal(noSoil.cropComparison.available, false);
+});
+
+test('Kolejne sprawdzenie: 2–3 terminy w roku, po dacie analizy', async () => {
+  const { nextCheckDates } = await import('../src/engine.js');
+  const { CROPS } = await import('../src/data/crops.js');
+  const k = nextCheckDates('2025-07-15', CROPS.kukurydza_ziarno);
+  assert.deepEqual(k.map((x) => x.date), ['2025-10-01', '2026-03-01', '2026-04-15']);
+  const z = nextCheckDates('2025-11-21', CROPS.zboza_ozime);
+  assert.equal(z.length, 3);
+  assert.ok(z.every((x) => x.date > '2025-11-21'));
+  assert.equal(z[1].title, 'Wiosna');
+});
+
+test('Wyszukiwarka miejsc (Nominatim): województwo przed wsią o tej samej nazwie, bez duplikatów', async () => {
+  const { parsePlaces } = await import('../src/sources/nominatim.js');
+  const maz = parsePlaces(JSON.parse(readFileSync(new URL('./fixtures/nominatim-mazowsze.json', import.meta.url))));
+  assert.equal(maz[0].kind, 'województwo');
+  assert.match(maz[0].label, /mazowieckie/);
+  const cie = parsePlaces(JSON.parse(readFileSync(new URL('./fixtures/nominatim-ciechanow.json', import.meta.url))));
+  assert.equal(new Set(cie.map((p) => p.label)).size, cie.length);
+  assert.equal(cie[0].name, 'Ciechanów');
+  assert.equal(cie[0].bbox.length, 4);
+  assert.ok(cie[0].bbox[0] < cie[0].bbox[2] && cie[0].bbox[1] < cie[0].bbox[3]);
+});

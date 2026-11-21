@@ -69,8 +69,9 @@ Darmowe API Open-Meteo ma limit **na adres IP**: 600 zapytań na minutę, 5 000 
 
 ## 2. Funkcjonalności
 
+0. **Strona startowa** „Sprawdź wodę na swoim polu w 3 prostych krokach” z wyszukiwarką, opisem kroków i informacją, kiedy warto sprawdzać pole (2–3 razy w roku). Adresy: `/` – start, `/mapa` – mapa, `/raport?…` – raport.
 1. **Dwa ekrany:** mapa z panelem wyboru działki, a po wyborze – strona z analizą. Z analizy wracasz do mapy w to samo miejsce i możesz kliknąć np. działkę sąsiada.
-2. **Wskazanie działki:** identyfikator działki ewidencyjnej (np. `302502_2.0009.387`), „nazwa obrębu i numer” (np. `Sulęcin 387`) albo kliknięcie na mapie. Obrys działki z ULDK GUGiK.
+2. **Wskazanie działki:** identyfikator działki ewidencyjnej (np. `302502_2.0009.387`), „nazwa obrębu i numer” (np. `Sulęcin 387`) albo kliknięcie na mapie. Obrys działki z ULDK GUGiK. **Wyszukiwarka miejsc:** to samo pole przyjmuje nazwę miejscowości, gminy, powiatu albo województwa („Ciechanów”, „mazowsze”, „pomorskie”) – mapa przelatuje na to miejsce, a rolnik klika swoje pole. Gdy działki o podanym numerze nie ma, aplikacja próbuje samej nazwy miejsca.
 2. **Uprawa** (9 grup, m.in. zboża ozime i jare, kukurydza, rzepak, ziemniak, burak, strączkowe, użytki zielone) i **data analizy**: dziś albo dowolny dzień z ostatnich 10 lat.
 3. **Ocena sytuacji wodnej** (etap 1):
    - klimatyczny bilans wodny (opad − ET0) z 61 dni porównany z **progami suszy rolniczej IUNG-PIB** dla uprawy i kategorii gleby (rozporządzenie MRiRW z 2019 r.),
@@ -82,8 +83,10 @@ Darmowe API Open-Meteo ma limit **na adres IP**: 600 zapytań na minutę, 5 000 
 5. **Rekomendacje** w kolejności wymaganej przez KOWR, każda z polem „na podstawie”:
    - **retencja**: zatrzymanie wody w rowie przy działce, wykorzystanie obniżeń terenu (punkt na mapie), spowolnienie spływu po stoku, strefy buforowe, ochrona mokradeł, gleby organiczne,
    - **agrotechnika**: międzyplony, resztki pożniwne, ograniczenie orki, materia organiczna, dobór upraw,
+   - **porównanie upraw na tej działce**: dla 14 upraw z tabel IUNG-PIB liczymy, w ilu z 10 ostatnich sezonów wpadłyby w suszę na tej kategorii gleby (ten sam bilans i progi co w ocenie głównej), plus orientacyjne potrzeby wodne i wrażliwość na suszę wg FAO. Gdy inna uprawa polowa miała suszę co najmniej o 2 sezony rzadziej, rada „Na tej glebie mniej ryzykowne byłyby: …” – jako podpowiedź, nie nakaz (płodozmian, rynek, dopłaty). Łąk nie porównujemy, bo zaoranie trwałego użytku zielonego szkodzi i zwykle jest zakazane,
    - **nawadnianie** (opcjonalnie): czy, kiedy i ile (dawka z bilansu strefy korzeni, termin z prognozy),
    - dla analizy „na dziś”: ostrzeżenia IMGW (meteo i susza hydrologiczna), przymrozki, upał, ulewy.
+5a. **Kiedy sprawdzić ponownie:** zakładamy, że pole sprawdza się 2–3 razy w roku, w chwilach decyzji. Raport podaje najbliższe terminy (przedwiośnie, przed siewem albo wiosną, przed zbiorem) z tym, co wtedy zrobić.
 6. **Ograniczenia i niepewność:** poziom pewności, lista czynników nieuwzględnionych, jawne braki danych (np. „brak bezchmurnego zdjęcia”, „OSM nie odpowiedział”), status każdego źródła.
 7. **Zapis raportu:** plik PDF generowany w przeglądarce (A4: dane działki ze szkicem obrysu, stan wody, wskaźniki, wykresy 10 lat, przyczyny, rekomendacje, ograniczenia, źródła z przypisaniami, metodyka; numeracja stron), zapis w aplikacji (ostatnie 10 raportów w przeglądarce), pobranie danych w JSON.
 8. Opcjonalne podsumowanie przez LLM (bez klucza – szablon).
@@ -134,8 +137,10 @@ Gdy numer pasuje do kilku działek, API zwraca 300 z listą kandydatów. Backend
 | Satelitarne | Sentinel-2 L2A (Earth Search, AWS) | NDVI, NDMI, maska SCL, 20 m, od 2018 | na bieżąco (tylko kafle z działką) |
 | Przestrzenne | GUGiK ULDK | działka, obręb, gmina, powiat, obrys | na bieżąco |
 | Przestrzenne | GUGiK NMT (GetHByPointList) | wysokości w siatce 9×9 na działce | na bieżąco |
+| Przestrzenne | Nominatim (OpenStreetMap) | wyszukiwanie miejsc po nazwie: miejscowość, gmina, powiat, województwo | na bieżąco, maks. 1 zapytanie/s, wyniki w cache na dysku (30 dni) |
 | Podkład | OpenFreeMap, GUGiK WMS (ortofoto, działki) | mapa | w przeglądarce |
 | Wiedza | FAO-56 (Kc, głębokość korzeni, wzory ET0) | `server/src/data/crops.js`, `et0.js` | przygotowane wcześniej |
+| Wiedza | FAO, Irrigation Water Management – Training Manual No. 3, tab. 14 | orientacyjne potrzeby wodne upraw i wrażliwość na suszę | **przepisane wcześniej, 21.11.2026** (`server/src/data/cropWater.js`) |
 
 Wynik i rekomendacje zawsze liczy aplikacja z pobranych danych. Nie ma gotowych rekomendacji.
 
@@ -170,6 +175,8 @@ Wynik i rekomendacje zawsze liczy aplikacja z pobranych danych. Nie ma gotowych 
 - **IMGW-PIB** – dane publiczne, wymagane wskazanie źródła („Źródłem pochodzenia danych jest IMGW-PIB”) i oznaczenie danych przetworzonych. https://danepubliczne.imgw.pl
 - **GUGiK (ULDK, WMS)** – dane bezpłatne, udostępniane na podstawie ustawy Prawo geodezyjne i kartograficzne. https://www.geoportal.gov.pl
 - **OpenStreetMap / OpenFreeMap** – dane ODbL, wymagane przypisanie „© OpenStreetMap contributors”.
+- **Nominatim** – dane OSM (ODbL). Zasady publicznego serwera (https://operations.osmfoundation.org/policies/nominatim/): najwyżej 1 zapytanie na sekundę, własny User-Agent, cache wyników, bez masowego geokodowania. Serwer pilnuje odstępu i zapisuje wyniki na dysku. Przy wdrożeniu krajowym – własna instancja Nominatim (open source, GPL) przez zmienną `NOMINATIM_URL`.
+- **FAO Training Manual No. 3** – wartości z tabeli cytowane jako źródło (dokument FAO dostępny publicznie).
 - **Copernicus Sentinel-2** – wolny i otwarty dostęp, wymagane przypisanie („Contains modified Copernicus Sentinel data”). Katalog Earth Search / AWS Open Data.
 - **NASA POWER** – dane NASA bez ograniczeń, z podaniem źródła.
 - **IUNG-PIB** – mapa kategorii gleb i progi KBW udostępnione publicznie (susza.iung.pulawy.pl, sgeo.iung.pl). Warunki dalszego wykorzystania do potwierdzenia z IUNG.

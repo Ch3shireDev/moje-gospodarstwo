@@ -18,10 +18,10 @@ Status: ✅ zrobione · ⚠️ częściowo · ❌ brak. Aktualizuj przy każdej 
 | 1 | Aplikacja webowa w przeglądarce, bez instalowania czegokolwiek. Musi działać w **Chrome, Firefox, Edge, Safari i Opera na Windows**. Działanie na mobile to atut | ⚠️ układ desktop + mobile gotowy, nie testowano w 5 przeglądarkach |
 
 Nasze założenie: **web first**, pełna responsywność. Rolnik musi móc zrobić wszystko **tylko na telefonie** (PWA z instalacją na ekranie głównym). Jury testuje jednak na komputerze, więc widok desktopowy nie może być „rozciągniętym telefonem”.
-| 2 | Wskazanie działki: **identyfikator działki ewidencyjnej** lub lokalizacja na mapie | ✅ ID TERYT, „obręb numer”, klik na mapie |
+| 2 | Wskazanie działki: **identyfikator działki ewidencyjnej** lub lokalizacja na mapie | ✅ ID TERYT, „obręb numer”, klik na mapie, wyszukiwarka miejsc (miejscowość, gmina, powiat, województwo) prowadząca do mapy |
 | 3 | **Wybór aktualnej uprawy** | ✅ 9 upraw (Kc FAO-56, progi IUNG) |
 | 4a | Ocena **bieżącej** sytuacji wodnej działki | ✅ KBW 61 dni vs progi IUNG, strefa korzeni FAO-56, Sentinel-2 |
-| 4b | Ocena **historycznej podatności** na niedobory wody z danych **z ostatnich 10 lat** | ✅ susza w X z 10 sezonów, ryzykowne miesiące, percentyl |
+| 4b | Ocena **historycznej podatności** na niedobory wody z danych **z ostatnich 10 lat** | ✅ susza w X z 10 sezonów, ryzykowne miesiące, percentyl; porównanie 14 upraw IUNG na tej glebie (które rzadziej miały suszę) |
 | 4c | Analiza na **dowolną datę** z ostatnich 10 lat (z rozdz. 6) | ✅ |
 | 4d | Wynik i rekomendacje **liczone z pobranych danych**. Wyświetlanie gotowych rekomendacji nie spełnia wymagań | ✅ silnik reguł |
 | 5 | Raport: stan niedoboru wody **i jego przyczyny**, rekomendacje uzasadnione danymi (retencyjne, agrotechniczne, nawadnianie opcjonalnie), **data**, **źródła**, **ograniczenia** (aktualność, dokładność, niepewność, czynniki pominięte). Brak danych komunikowany wprost, bez pozornej precyzji | ✅ przyczyny, wskaźniki, poziom pewności, lista ograniczeń, statusy źródeł |

@@ -6,6 +6,7 @@ import { buildReport, parseQuery, lookupParcel, InputError, ParcelChoice, todayW
 import { EXAMPLES } from './demo.js';
 import { SOIL_CATEGORIES } from './engine.js';
 import { CROPS, DEFAULT_CROP } from './data/crops.js';
+import { searchPlaces } from './sources/nominatim.js';
 
 const PORT = Number(process.env.PORT) || 8787;
 const DIST = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/dist');
@@ -66,6 +67,15 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname === '/api/parcel') {
       return sendJson(res, 200, await lookupParcel(url.searchParams));
+    }
+    if (url.pathname === '/api/places') {
+      const q = (url.searchParams.get('q') ?? '').trim();
+      if (q.length < 2 || q.length > 80) throw new InputError('Wpisz nazwę miejscowości, gminy, powiatu albo województwa.');
+      try {
+        return sendJson(res, 200, { places: await searchPlaces(q) });
+      } catch (err) {
+        throw Object.assign(new Error(`Wyszukiwarka miejsc (OpenStreetMap) nie odpowiada: ${err.message}`), { status: 502 });
+      }
     }
     if (url.pathname === '/api/report') {
       const query = parseQuery(url.searchParams);

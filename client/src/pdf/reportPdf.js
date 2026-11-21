@@ -298,6 +298,46 @@ function actionCard(a) {
   };
 }
 
+function cropCompareSection(report) {
+  const cmp = report.cropComparison;
+  if (!cmp?.available) return [];
+  const riskColor = { niska: '#2f6b47', srednia: '#7a5410', wysoka: C.red };
+  return [
+    sectionTitle('4a', 'Które uprawy na tej glebie rzadziej cierpią na suszę', `Sezony ${cmp.seasonsRange}, gleba kat. ${cmp.category}, progi suszy IUNG-PIB. Podpowiedź, nie nakaz.`),
+    {
+      table: {
+        headerRows: 1,
+        widths: ['*', 70, 150],
+        body: [
+          ['Uprawa', 'Sezony z suszą', 'Potrzeby wodne wg FAO'].map((t) => ({ text: t, style: 'th' })),
+          ...cmp.rows.map((r) => [
+            { text: clean(`${r.label}${r.current ? ' (Twoja)' : ''}${r.perennial ? ' – wieloletnia/specjalna' : ''}`), fontSize: 8, bold: r.current },
+            r.notSuited
+              ? { text: 'niewskazana', fontSize: 8, color: C.muted }
+              : { text: `${r.droughtYears} z ${cmp.seasons}`, fontSize: 8, bold: true, color: riskColor[r.level] },
+            { text: r.fao ? clean(`${r.fao.mmFrom}–${r.fao.mmTo} mm, wrażliwość ${r.fao.sensitivity}`) : '–', fontSize: 7.5, color: C.muted },
+          ]),
+        ],
+      },
+      layout: gridLayout,
+    },
+    {
+      margin: [0, 4, 0, 0],
+      fontSize: 7,
+      color: C.muted,
+      text: clean(`Potrzeby wodne: ${cmp.faoSource} – wartości orientacyjne z cieplejszych klimatów. O wyborze uprawy decydują też płodozmian, rynek, maszyny i zasady programów dopłat.`),
+    },
+  ];
+}
+
+function nextCheckSection(report) {
+  if (!report.nextCheck?.length) return [];
+  return [
+    sectionTitle('»', 'Kiedy sprawdzić ponownie', 'Wystarczy 2–3 razy w roku, w chwilach decyzji.'),
+    { ul: report.nextCheck.map((c) => ({ text: [{ text: `${clean(c.title)} – około ${fmtDate(c.date)}: `, bold: true }, clean(c.why)], fontSize: 8.5, margin: [0, 1, 0, 1] })) },
+  ];
+}
+
 function actionsSection(num, title, subtitle, list) {
   if (!list?.length) return [];
   return [sectionTitle(num, title, subtitle), ...list.map(actionCard)];
@@ -602,10 +642,12 @@ export function buildDocDefinition(report) {
       ? [
           ...actionsSection('3', 'Zatrzymaj wodę (retencja)', 'Najpierw zatrzymanie wody tam, gdzie spadła – na działce i w gospodarstwie.', rec.retencja),
           ...actionsSection('4', 'Zabiegi uprawowe (agrotechnika)', 'Jak ograniczyć straty wilgoci i zwiększyć retencję glebową.', rec.agrotechnika),
+          ...cropCompareSection(report),
           ...actionsSection('5', 'Nawadnianie (opcjonalnie)', 'Dopiero po retencji: czy, kiedy i ile.', rec.nawadnianie),
           ...actionsSection('!', 'Pogoda i ostrzeżenia na najbliższe dni', null, rec.pogoda),
         ]
       : [{ text: 'Bez oceny sytuacji wodnej nie generujemy rekomendacji.', style: 'muted' }]),
+    ...nextCheckSection(report),
     ...limitsSection(report),
     ...sourcesSection(report),
     ...methodSection(),

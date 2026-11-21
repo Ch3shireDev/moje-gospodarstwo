@@ -2,7 +2,8 @@ import { Component, useEffect, useMemo, useRef, useState } from 'react';
 import MapView from './components/MapView.jsx';
 import Report from './components/Report.jsx';
 import DatePicker from './components/DatePicker.jsx';
-import { ChoiceError, FALLBACK_META, fetchMeta, fetchParcel, fetchReport, lastReport, savedReports, storage } from './api.js';
+import Landing from './components/Landing.jsx';
+import { ChoiceError, FALLBACK_META, fetchMeta, fetchParcel, fetchPlaces, fetchReport, lastReport, savedReports, storage } from './api.js';
 import { fmtDate, n, parsePlDate } from './format.js';
 
 function useInstallPrompt() {
@@ -54,7 +55,7 @@ const LOADING_STEPS = [
   'Liczę bilans wodny i rekomendacje…',
 ];
 
-// Adresy: "/" = mapa, "/raport?dzialka=…&data=…&uprawa=…[&gleba=…]" = raport.
+// Adresy: "/" = strona startowa, "/mapa" = mapa, "/raport?dzialka=…&data=…&uprawa=…[&gleba=…]" = raport.
 // Odświeżenie albo wklejony link otwiera ten sam raport; działa też "wstecz" w przeglądarce.
 function reportPath(q) {
   const p = new URLSearchParams();
@@ -70,7 +71,7 @@ function reportPath(q) {
 }
 
 function parseRoute(loc = window.location) {
-  if (loc.pathname !== '/raport' && loc.hash !== '#raport') return { view: 'mapa', q: null };
+  if (loc.pathname !== '/raport' && loc.hash !== '#raport') return { view: loc.pathname === '/mapa' ? 'mapa' : 'start', q: null };
   const p = new URLSearchParams(loc.search);
   const q = {
     parcel: p.get('dzialka') || null,
@@ -109,7 +110,7 @@ function navigate(path, { replace = false } = {}) {
 
 export default function App() {
   const [meta, setMeta] = useState(FALLBACK_META);
-  const [view, setView] = useState('mapa');
+  const [view, setView] = useState(() => parseRoute().view);
   const [parcelText, setParcelText] = useState(() => storage.get('parcelText', ''));
   const [point, setPoint] = useState(null);
   const [crop, setCrop] = useState(() => storage.get('crop', ''));
@@ -133,17 +134,23 @@ export default function App() {
   // Telefon: panel wyboru zwinięty do karty działki i dużego przycisku "Analizuj".
   const [sheetOpen, setSheetOpen] = useState(false);
   const lookupRef = useRef(null);
+  // Wyszukiwanie miejsca po nazwie ("Ciechanów", "pomorskie"): lista do wyboru albo pokazane miejsce.
+  const [places, setPlaces] = useState(null);
+  const [place, setPlace] = useState(null);
+  const searchedRef = useRef(null);
 
-  function lookup(target) {
+  function lookup(target, { fallbackText = null } = {}) {
     lookupRef.current?.abort();
     const ctrl = new AbortController();
     lookupRef.current = ctrl;
     setLookupBusy(true);
     setError(null);
     setCandidates(null);
+    setPlaces(null);
     fetchParcel(target, ctrl.signal)
       .then((p) => {
         setSelected(p);
+        setPlace(null);
         setParcelText(p.id);
       })
       .catch((e) => {
@@ -153,7 +160,10 @@ export default function App() {
           setSheetOpen(true);
         } else {
           setSelected(null);
-          setError(e.message);
+          // Nie ma takiej działki – może to nazwa miejsca z numerem ("Sulęcin 387")? Spróbuj samą nazwę.
+          const name = fallbackText?.replace(/[\d_./\\-]+/g, ' ').replace(/\s+/g, ' ').trim();
+          if (name && name.length >= 2) findPlaces(name, { notFound: e.message });
+          else setError(e.message);
         }
       })
       .finally(() => {
@@ -161,10 +171,58 @@ export default function App() {
       });
   }
 
+  function findPlaces(text, { notFound = null } = {}) {
+    lookupRef.current?.abort();
+    const ctrl = new AbortController();
+    lookupRef.current = ctrl;
+    setLookupBusy(true);
+    setError(null);
+    setCandidates(null);
+    setPlaces(null);
+    fetchPlaces(text, ctrl.signal)
+      .then((list) => {
+        if (!list.length) {
+          setError(notFound ?? `Nie znaleziono „${text}”. Wpisz nazwę miejscowości, gminy, powiatu albo numer działki.`);
+          return;
+        }
+        if (notFound) setError(`${notFound} Pokazuję miejsce „${text}” – kliknij swoje pole na mapie.`);
+        if (list.length === 1) goToPlace(list[0]);
+        else {
+          setPlaces(list);
+          setSheetOpen(true);
+        }
+      })
+      .catch((e) => {
+        if (e.name !== 'AbortError') setError(e.message);
+      })
+      .finally(() => {
+        if (!ctrl.signal.aborted) setLookupBusy(false);
+      });
+  }
+
+  function goToPlace(p) {
+    setPlaces(null);
+    setSelected(null);
+    setPlace(p);
+    setParcelText('');
+    setSheetOpen(false);
+    setFocus({ lat: p.lat, lon: p.lon, bbox: p.bbox, zoom: 13, force: true });
+  }
+
+  /** Jedno pole: numer działki ("302502_2.0009.387", "Sulęcin 387") albo nazwa miejsca ("Ciechanów"). */
+  function search(text) {
+    const t = text.trim();
+    if (!t) return;
+    searchedRef.current = t;
+    if (/\d/.test(t)) lookup({ parcel: t }, { fallbackText: t });
+    else findPlaces(t);
+  }
+
   // Wpisany numer -> po chwili przerwy w pisaniu pokazujemy działkę na mapie.
   useEffect(() => {
     const text = parcelText.trim();
-    if (!text || text === selected?.id || text.length < 4 || !/\d/.test(text)) return undefined;
+    // Pomijamy tekst, którego wyszukanie już ruszyło (Enter, "Szukaj", strona startowa).
+    if (!text || text === selected?.id || text === searchedRef.current || text.length < 4 || !/\d/.test(text)) return undefined;
     const t = setTimeout(() => lookup({ parcel: text }), 900);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -187,8 +245,8 @@ export default function App() {
   useEffect(() => {
     const apply = () => {
       const { view: v, q } = parseRoute();
-      if (v === 'mapa') {
-        setView('mapa');
+      if (v !== 'raport') {
+        setView(v);
         return;
       }
       if (!q) {
@@ -197,7 +255,7 @@ export default function App() {
           navigate(reportPath(queryOfReport(reportRef.current)), { replace: true });
           setView('raport');
         } else {
-          navigate('/', { replace: true });
+          navigate('/mapa', { replace: true });
           setView('mapa');
         }
         return;
@@ -232,8 +290,13 @@ export default function App() {
   }
 
   function showMap(opts) {
-    navigate('/', opts);
+    navigate('/mapa', opts);
     setView('mapa');
+  }
+
+  function showStart() {
+    navigate('/');
+    setView('start');
   }
 
   function validDate() {
@@ -293,7 +356,7 @@ export default function App() {
     storage.set('crop', crop);
     // Analiza tylko dla wybranej (odnalezionej w ewidencji) działki.
     if (selected) run({ parcel: selected.id });
-    else setError('Najpierw wybierz działkę: kliknij ją na mapie albo wpisz numer.');
+    else setError('Najpierw wybierz działkę: kliknij ją na mapie albo wpisz numer lub miejscowość.');
   }
 
   // Klik na mapie tylko wybiera działkę (obrys + numer). Analiza dopiero po "Analizuj".
@@ -311,8 +374,9 @@ export default function App() {
   }
 
   const saveReport = () => setSaved(savedReports.add(report));
-  const shownGeometry = selected?.geometry ?? report?.place?.parcel?.geometry ?? null;
-  const markers = useMemo(() => (report && (!selected || selected.id === report.place?.parcel?.id) ? markersOf(report) : []), [report, selected]);
+  // Po wyszukaniu miejsca nie pokazujemy obrysu starej działki – rolnik szuka nowego pola.
+  const shownGeometry = selected?.geometry ?? (place ? null : report?.place?.parcel?.geometry ?? null);
+  const markers = useMemo(() => (report && !place && (!selected || selected.id === report.place?.parcel?.id) ? markersOf(report) : []), [report, selected, place]);
 
   return (
     <div className={`app view-${view}`}>
@@ -320,10 +384,10 @@ export default function App() {
         <a
           className="brand"
           href="/"
-          title="Strona główna – mapa"
+          title="Strona główna"
           onClick={(e) => {
             e.preventDefault();
-            showMap();
+            showStart();
           }}
         >
           <img src="/favicon.svg" alt="" width="30" height="30" />
@@ -333,6 +397,11 @@ export default function App() {
           </div>
         </a>
         <div className="topbar-actions">
+          {view === 'start' && (
+            <button type="button" className="btn-ghost" onClick={() => showMap()}>
+              Mapa →
+            </button>
+          )}
           {view === 'raport' && (
             <button type="button" className="btn-ghost" onClick={() => showMap()}>
               ← Mapa
@@ -351,6 +420,21 @@ export default function App() {
         </div>
       </header>
 
+      {view === 'start' && (
+        <Landing
+          examples={meta.examples}
+          lastReport={report}
+          onSearch={(text) => {
+            setParcelText(text);
+            showMap();
+            search(text);
+          }}
+          onStart={() => showMap()}
+          onExample={(ex) => useExample(ex)}
+          onOpenReport={() => showReport()}
+        />
+      )}
+
       {/* EKRAN 1: mapa na całą szerokość + panel wyboru działki. Zostaje zamontowany, żeby mapa pamiętała widok. */}
       <main className="map-screen" hidden={view !== 'mapa'}>
         <MapView
@@ -360,7 +444,7 @@ export default function App() {
           onPick={pickOnMap}
           focus={focus}
           visible={view === 'mapa'}
-          hint={lookupBusy ? 'Szukam działki…' : selected || report ? 'Kliknij, aby zmienić działkę' : 'Kliknij swoją działkę'}
+          hint={lookupBusy ? 'Szukam…' : place && !selected ? 'Przybliż i kliknij swoje pole' : selected || report ? 'Kliknij, aby zmienić działkę' : 'Kliknij swoją działkę'}
         />
 
         <aside className={`picker${sheetOpen ? ' sheet-open' : ''}`}>
@@ -377,7 +461,13 @@ export default function App() {
                 <span className="small muted">gm. {selected.commune}, {selected.county}{selected.areaHa != null ? ` · ${n(selected.areaHa)} ha` : ''}</span>
               </div>
             ) : (
-              <p className="small muted">{lookupBusy ? 'Szukam działki…' : 'Kliknij działkę na mapie albo wpisz jej numer.'}</p>
+              <p className="small muted" aria-live="polite">
+                {lookupBusy
+                  ? 'Szukam…'
+                  : place
+                    ? `Pokazuję: ${place.name}${place.kind ? ` (${place.kind})` : ''}. Przybliż mapę i kliknij swoje pole.`
+                    : 'Wpisz miejscowość albo numer działki, albo kliknij pole na mapie.'}
+              </p>
             )}
             {error && (
               <div className="banner error" role="alert">
@@ -386,24 +476,31 @@ export default function App() {
             )}
 
             {/* Zawsze widoczne (także po zwinięciu na telefonie): numer, uprawa, przycisk. */}
-            <label className="field">
-              <span>Numer działki</span>
-              <input
-                type="text"
-                value={parcelText}
-                onChange={(e) => setParcelText(e.target.value)}
-                onKeyDown={(e) => {
-                  // Enter w polu numeru pokazuje działkę na mapie (analiza – przyciskiem).
-                  if (e.key === 'Enter' && parcelText.trim() && parcelText.trim() !== selected?.id) {
-                    e.preventDefault();
-                    lookup({ parcel: parcelText.trim() });
-                  }
-                }}
-                placeholder="np. 302502_2.0009.387 albo Sulęcin 387"
-                autoComplete="off"
-                spellCheck="false"
-              />
-            </label>
+            <div className="field">
+              <label htmlFor="search-input">Miejscowość albo numer działki</label>
+              <div className="search-row">
+                <input
+                  id="search-input"
+                  type="search"
+                  enterKeyHint="search"
+                  value={parcelText}
+                  onChange={(e) => setParcelText(e.target.value)}
+                  onKeyDown={(e) => {
+                    // Enter pokazuje działkę albo miejsce na mapie (analiza – przyciskiem).
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (parcelText.trim() && parcelText.trim() !== selected?.id) search(parcelText);
+                    }
+                  }}
+                  placeholder="np. Ciechanów, Sulęcin 387, 302502_2.0009.387"
+                  autoComplete="off"
+                  spellCheck="false"
+                />
+                <button type="button" className="btn-secondary search-btn" disabled={!parcelText.trim() || lookupBusy} onClick={() => search(parcelText)}>
+                  Szukaj
+                </button>
+              </div>
+            </div>
             <label className="field">
               <span>Co rośnie na działce?</span>
               <select id="crop-select" value={crop} onChange={(e) => { setCrop(e.target.value); setError(null); }} className={crop ? '' : 'needs-choice'} required>
@@ -459,6 +556,22 @@ export default function App() {
               </div>
             )}
           </form>
+
+          {places && (
+            <div className="card picker-extra" role="dialog" aria-label="Wybierz miejsce">
+              <h3>Które miejsce?</h3>
+              <ul className="candidates">
+                {places.map((p) => (
+                  <li key={p.label}>
+                    <button type="button" className="link-btn" onClick={() => goToPlace(p)}>
+                      {p.label}
+                    </button>
+                    {p.kind && <span className="small muted">{p.kind}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {candidates && (
             <div className="card picker-extra" role="dialog" aria-label="Wybierz działkę">

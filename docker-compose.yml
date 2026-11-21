@@ -20,6 +20,7 @@ services:
       OPEN_METEO_API_KEY: ${OPEN_METEO_API_KEY:-}
       OPEN_METEO_FORECAST_URL: ${OPEN_METEO_FORECAST_URL:-}
       OPEN_METEO_ARCHIVE_URL: ${OPEN_METEO_ARCHIVE_URL:-}
+      NOMINATIM_URL: ${NOMINATIM_URL:-}
     volumes:
       # Cache danych archiwalnych przeżywa przebudowę kontenera (mniej zapytań do Open-Meteo).
       - app_cache:/app/server/.cache

@@ -118,7 +118,7 @@ export function retentionActions({ status, soil, terrain, waters, vulnerability,
   return sortByPriority(out);
 }
 
-export function agroActions({ status, soil, crop, vulnerability, date, rootZone, iungNotRecommended }) {
+export function agroActions({ status, soil, crop, vulnerability, date, rootZone, iungNotRecommended, cropComparison = null }) {
   const out = [];
   const m = Number(date.slice(5, 7));
   const lightSoil = soil.category === 'I' || soil.category === 'II';
@@ -158,6 +158,9 @@ export function agroActions({ status, soil, crop, vulnerability, date, rootZone,
     basis: [dry ? `stan wody: ${status.label.toLowerCase()}` : 'ograniczanie strat wilgoci'],
     knowledge: [],
   });
+
+  const choice = cropChoiceAction(cropComparison, crop);
+  if (choice) out.push(choice);
 
   if (lightSoil || dry) {
     out.push({
@@ -332,4 +335,20 @@ export function weatherActions({ next, season, warnings, hydroWarnings }) {
   const heat = next.filter((d) => d.tmax != null && d.tmax >= 30);
   if (heat.length) out.push({ id: 'upal', priority: 'wazne', title: `Upał: ${heat.map((d) => fmtDate(d.date)).join(', ')}`, detail: 'Zapotrzebowanie roślin na wodę rośnie. Jeśli nawadniasz – rano. Zabiegi ochrony roślin przenieś na wieczór.', basis: ['prognoza Open-Meteo: temperatura maksymalna ≥ 30°C'], knowledge: [] });
   return sortByPriority(out);
+}
+
+/** Podpowiedź o wyborze uprawy – tylko gdy dane z 10 lat pokazują wyraźnie mniejsze ryzyko suszy. */
+function cropChoiceAction(cmp, crop) {
+  if (!cmp?.available || !cmp.current || cmp.current.notSuited || !cmp.safer.length) return null;
+  const cur = cmp.current;
+  const top = cmp.safer.slice(0, 3);
+  const list = top.map((r) => `${r.label} (${r.droughtYears} z ${cmp.seasons})`).join(', ');
+  return {
+    id: 'agro-wybor-uprawy',
+    priority: cur.level === 'wysoka' ? 'wazne' : 'info',
+    title: `Na tej glebie mniej ryzykowne byłyby: ${top.map((r) => r.label).join(', ')}`,
+    detail: `Policzyliśmy, w ilu z ostatnich ${cmp.seasons} sezonów (${cmp.seasonsRange}) każda uprawa wpadłaby tu w suszę według progów IUNG-PIB dla gleby kat. ${cmp.category}. ${crop.short.charAt(0).toUpperCase()}${crop.short.slice(1)}: ${cur.droughtYears} z ${cmp.seasons}, a ${list}. To tylko jedno z kryteriów – o wyborze decydują też płodozmian, rynek, maszyny i zasady programów dopłat. Pełne zestawienie jest w szczegółach raportu.`,
+    basis: [`susza w ${cur.droughtYears} z ${cmp.seasons} sezonów dla uprawy: ${crop.short}`, `progi suszy IUNG-PIB, gleba kat. ${cmp.category}`],
+    knowledge: [],
+  };
 }

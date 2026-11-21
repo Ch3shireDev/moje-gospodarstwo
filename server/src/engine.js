@@ -5,6 +5,7 @@ import { CROPS, kcOn } from './data/crops.js';
 import { balanceWindow, iungPeriodNear, iungThreshold, longestDrySpell, rootZoneBalance, SOIL_CATEGORIES, KBW_DAYS } from './analysis/water.js';
 import { compareWithHistory, monthlyClimatology, sameWindowHistory, vulnerability } from './analysis/history.js';
 import { assessWater, identifyCauses, n, seasonOf, signed } from './analysis/assess.js';
+import { compareCrops } from './analysis/cropCompare.js';
 import { agroActions, irrigationActions, retentionActions, weatherActions } from './analysis/recommend.js';
 import { addDays } from './weather.js';
 import { fmtDate } from './format.js';
@@ -25,6 +26,11 @@ export function buildAssessment(input) {
   const threshold = period ? iungThreshold(crop.iung, soilCatForIung, period.idx) : undefined;
   const hist = compareWithHistory(current, sameWindowHistory(days, date));
   const vuln = vulnerability(days, date, { iungKey: crop.iung, category: soilCatForIung });
+  // Które uprawy na tej glebie wpadały w suszę rzadziej (podpowiedź, nie nakaz). Łąki nie porównujemy –
+  // zaoranie trwałego użytku zielonego to strata wody i próchnicy, a w dopłatach zwykle zakaz.
+  const cropComparison = crop.grassland
+    ? { available: false, reason: 'Łąki i pastwiska nie porównujemy z uprawami polowymi: zaoranie trwałego użytku zielonego to utrata próchnicy i wody, a w dopłatach zwykle jest zakazane.' }
+    : compareCrops(days, date, { category: soilCatForIung, currentIung: crop.iung });
   const rootZone = SOIL_CATEGORIES[soil.category] || soil.category === 'organiczna'
     ? rootZoneBalance(days, date, crop, SOIL_CATEGORIES[soil.category] ? soil.category : 'IV')
     : null;
@@ -44,7 +50,7 @@ export function buildAssessment(input) {
   })();
   const recommendations = status.level === 'brak' ? null : {
     retencja: retentionActions({ status, soil, terrain, waters, vulnerability: vuln, season, watersFailed: !!failures.waters, crop }),
-    agrotechnika: agroActions({ status, soil, crop, vulnerability: vuln, date, rootZone, iungNotRecommended: threshold === 'nie' }),
+    agrotechnika: agroActions({ status, soil, crop, vulnerability: vuln, date, rootZone, iungNotRecommended: threshold === 'nie', cropComparison }),
     nawadnianie: irrigationActions({ rootZone, season, isToday, next: isToday ? next : [], crop, recentEtc }),
     pogoda: isToday ? weatherActions({ next, season, warnings, hydroWarnings }) : [],
   };
@@ -72,6 +78,8 @@ export function buildAssessment(input) {
     },
     history: hist,
     vulnerability: vuln,
+    cropComparison,
+    nextCheck: nextCheckDates(date, crop),
     climatology: monthlyClimatology(days, date),
     rootZone,
     causes,
@@ -131,3 +139,32 @@ function templateSummary({ status, current, hist, vuln, recommendations, date })
   return parts.join(' ');
 }
 
+
+/**
+ * Raport sprawdza się kilka razy w roku, w chwilach decyzji – nie codziennie.
+ * Proponujemy najbliższe 2–3 terminy po dacie analizy: przedwiośnie (woda z roztopów, zastawki),
+ * przed siewem / ruszeniem wegetacji i po zbiorze (międzyplon, resztki).
+ */
+export function nextCheckDates(date, crop) {
+  const y = Number(date.slice(0, 4));
+  const iso = (yy, m, d) => `${yy}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  const sowMonth = crop.grassland ? 4 : (crop.kcMonth.findIndex((k, i, a) => k > 0 && a[(i + 11) % 12] === 0) + 1 || 4);
+  const autumnSown = !crop.grassland && sowMonth >= 8;
+  const points = [
+    { mmdd: [3, 1], title: 'Przedwiośnie', why: 'zatrzymaj wodę z roztopów: zamknij zastawki, nie osuszaj zastoisk' },
+    autumnSown
+      ? { mmdd: [5, 1], title: 'Wiosna', why: 'sprawdź zapas wody, zanim zboża i rzepak wejdą w okres największego zużycia' }
+      : { mmdd: [Math.max(3, sowMonth - 1), 15], title: crop.grassland ? 'Przed pierwszym pokosem' : 'Przed siewem', why: crop.grassland ? 'ustal wysokość koszenia i wypas pod zapas wody' : 'dobierz uprawę roli i termin siewu do wilgotności gleby' },
+    crop.harvestMonth
+      ? { mmdd: [crop.harvestMonth, 1], title: 'Przed zbiorem', why: 'zaplanuj międzyplon albo pozostawienie resztek na polu' }
+      : { mmdd: [7, 1], title: 'Środek lata', why: 'sprawdź odrost po pokosach i czy ograniczyć wypas' },
+  ];
+  const out = [];
+  for (let yy = y; yy <= y + 1 && out.length < 3; yy++) {
+    for (const p of points.slice().sort((a, b) => a.mmdd[0] - b.mmdd[0] || a.mmdd[1] - b.mmdd[1])) {
+      const d = iso(yy, ...p.mmdd);
+      if (d > date && out.length < 3) out.push({ date: d, title: p.title, why: p.why });
+    }
+  }
+  return out;
+}

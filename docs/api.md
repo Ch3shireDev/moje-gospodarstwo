@@ -71,3 +71,19 @@ GET /api/report?lat&lon&soil[&scenario]
 | Sentinel-2 STAC | `POST https://earth-search.aws.element84.com/v1/search` | duplikaty scen (`_0`/`_1`), COG Deflate + predyktor 2, kafle 512/1024 |
 | IMGW hydro | `https://danepubliczne.imgw.pl/api/data/hydro`, `/warningshydro` | hydro ma `lat`/`lon`; ostrzeżenia po województwie i kodach zlewni |
 | Overpass | `POST https://overpass-api.de/api/interpreter` | `out tags geom` |
+
+## Nominatim (OpenStreetMap) – wyszukiwanie miejsc
+
+```
+https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=pl&accept-language=pl&limit=8&addressdetails=1&q=ciechanów
+```
+
+- Tablica obiektów: `name`, `display_name` („Ciechanów, powiat ciechanowski, województwo mazowieckie, Polska”), `lat`/`lon` jako **stringi**, `boundingbox` jako `[płd, płn, zach, wsch]` (stringi – inna kolejność niż GeoJSON!), `addresstype` (`state`, `county`, `town`, `village`…), `importance`.
+- Ta sama nazwa wraca kilka razy (np. miasto i gmina miejska) – deduplikujemy po `display_name`.
+- „mazowsze” zwraca najpierw wieś Mazowsze, a dopiero dalej województwo – sortujemy po `importance`.
+- Zasady: maks. 1 zapytanie/s, własny `User-Agent`, cache. Fixtury: `nominatim-ciechanow.json`, `nominatim-mazowsze.json` (21.11.2026).
+- Usługa geokodowania GUGiK (`services.gugik.gov.pl/uug`) odpowiadała 21.11.2026 „blocked for abuse” i nie znajduje województw, dlatego jej nie używamy.
+
+## Nasz serwer – `/api/places?q=…`
+
+`{ places: [{ name, label, kind, lat, lon, bbox: [zach, płd, wsch, płn] }] }` – do 6 miejsc, od najważniejszych. `kind`: województwo, powiat, gmina, miasto, wieś…

@@ -19,6 +19,7 @@ Treści w aplikacji są parafrazą, a nie cytatem. Każda liczba ma źródło.
 - European Commission (2014) – Natural Water Retention Measures Policy Document.
 - European Commission (2015) – A Guide to Support the Selection, Design and Implementation of Natural Water Retention Measures in Europe.
 - FAO (2019) – Water scarcity management: addressing water scarcity in agriculture and food systems.
+- Brouwer, C., Heibloem, M. (1986) – FAO Irrigation Water Management: Training Manual No. 3 – Irrigation Water Needs, rozdz. 3, tab. 14 (orientacyjne potrzeby wodne upraw i wrażliwość na suszę). https://www.fao.org/4/s2022e/s2022e07.htm – użyte w porównaniu upraw (`server/src/data/cropWater.js`), sprawdzone 21.11.2026.
 - Minasny, B. i in. (2017) – Soil carbon 4 per mille. Geoderma 292, 59–86.
 - Żyłowska, K., Kozyra, J. (2025) – Zintegrowane monitorowanie suszy na potrzeby rolnictwa, IUNG-PIB.
 - POLSA (2024) – Dane satelitarne dla administracji publicznej, rozdz. 6.3.3 i 6.3.4. https://polsa.gov.pl/aktywnosci/obserwacja-ziemi/dane-satelitarne/

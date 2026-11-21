@@ -54,6 +54,11 @@ export function fetchParcel(q, signal) {
   return getJson(`/api/parcel?${params}`, signal);
 }
 
+/** Miejsca po nazwie (miejscowość, gmina, powiat, województwo) – Nominatim przez nasz serwer. */
+export function fetchPlaces(text, signal) {
+  return getJson(`/api/places?${new URLSearchParams({ q: text })}`, signal).then((b) => b.places ?? []);
+}
+
 // localStorage bywa niedostępny (tryb prywatny, WebView) – wtedy po prostu nie pamiętamy.
 export const storage = {
   get(key, fallback) {

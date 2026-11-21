@@ -74,6 +74,59 @@ function TodoGroup({ title, list }) {
   );
 }
 
+const RISK_LABEL = { niska: 'małe', srednia: 'średnie', wysoka: 'duże' };
+
+/** Które uprawy na tej glebie rzadziej wpadały w suszę w ostatnich 10 sezonach (progi IUNG-PIB). */
+function CropCompare({ cmp, cropShort }) {
+  if (!cmp) return null;
+  if (!cmp.available) {
+    return (
+      <section className="block">
+        <h3>Co tu rośnie najłatwiej przy suszy?</h3>
+        <p className="small muted">{cmp.reason}</p>
+      </section>
+    );
+  }
+  const best = cmp.rows.filter((r) => !r.notSuited && !r.perennial).slice(0, 3);
+  const cur = cmp.current;
+  return (
+    <section className="block">
+      <h3>Co tu rośnie najłatwiej przy suszy?</h3>
+      <p className="small">
+        Na tej glebie (kat. {cmp.category}) w sezonach {cmp.seasonsRange} najrzadziej suszę miałyby: <strong>{best.map((r) => r.label).join(', ')}</strong>.
+        {cur && !cur.notSuited && <> Twoja uprawa ({cropShort}): susza w <strong>{cur.droughtYears} z {cmp.seasons}</strong> sezonów.</>}
+        {cur?.notSuited && <> IUNG uznaje uprawę „{cropShort}” za niewskazaną na tej kategorii gleby.</>}
+      </p>
+      <details>
+        <summary className="small">Zestawienie wszystkich upraw</summary>
+        <table className="crop-table">
+          <thead>
+            <tr><th>Uprawa</th><th>Sezony z suszą</th><th className="col-fao">Potrzeby wodne wg FAO</th></tr>
+          </thead>
+          <tbody>
+            {cmp.rows.map((r) => (
+              <tr key={r.key} className={r.current ? 'is-current' : ''}>
+                <td>{r.label}{r.current && ' (Twoja)'}{r.perennial && <span className="muted small"> · wieloletnia/specjalna</span>}</td>
+                <td>
+                  {r.notSuited
+                    ? <span className="risk risk-nie">niewskazana</span>
+                    : <span className={`risk risk-${r.level}`} title={`ryzyko ${RISK_LABEL[r.level]}`}>{r.droughtYears} z {cmp.seasons}</span>}
+                </td>
+                <td className="col-fao small">{r.fao ? `${r.fao.mmFrom}–${r.fao.mmTo} mm, wrażliwość na suszę ${r.fao.sensitivity}` : '–'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="small muted">
+          Liczymy, w ilu sezonach klimatyczny bilans wodny spadł poniżej progu suszy IUNG-PIB dla danej uprawy i tej gleby – ta sama metoda co w ocenie powyżej.
+          Potrzeby wodne na cały sezon: {cmp.faoSource} (wartości orientacyjne, z cieplejszych klimatów – w Polsce zwykle niższe, ale kolejność upraw ta sama).
+          To jedno z kryteriów: o wyborze uprawy decydują też płodozmian, rynek, maszyny i zasady programów dopłat.
+        </p>
+      </details>
+    </section>
+  );
+}
+
 function Climatology({ data }) {
   const rows = data.filter((d) => d.month >= 3 && d.month <= 10);
   const vals = rows.flatMap((r) => [r.normal, r.current, r.currentPartial]).filter((v) => v != null);
@@ -198,6 +251,23 @@ export default function Report({ report, onSave, onBack }) {
         </section>
       ) : (
         <p className="banner">Bez oceny wody na działce nie podajemy rad.</p>
+      )}
+
+      {crop.id !== 'uzytki_zielone' || report.cropComparison?.available ? <CropCompare cmp={report.cropComparison} cropShort={crop.short} /> : null}
+
+      {report.nextCheck?.length > 0 && (
+        <section className="block">
+          <h3>Kiedy sprawdzić ponownie?</h3>
+          <p className="small muted">Wystarczy 2–3 razy w roku, w chwilach decyzji. W suszy, przy podlewaniu – co tydzień–dwa.</p>
+          <ul className="next-checks">
+            {report.nextCheck.map((c) => (
+              <li key={c.date}>
+                <strong>{c.title} · około {fmtDate(c.date)}</strong>
+                <span className="small">{c.why}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <p className="certainty">
