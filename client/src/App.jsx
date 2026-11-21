@@ -477,7 +477,7 @@ export default function App() {
 
             {/* Zawsze widoczne (także po zwinięciu na telefonie): numer, uprawa, przycisk. */}
             <div className="field">
-              <label htmlFor="search-input">Miejscowość albo numer działki</label>
+              <label htmlFor="search-input">Region lub numer działki</label>
               <div className="search-row">
                 <input
                   id="search-input"
@@ -492,7 +492,7 @@ export default function App() {
                       if (parcelText.trim() && parcelText.trim() !== selected?.id) search(parcelText);
                     }
                   }}
-                  placeholder="np. Ciechanów, Sulęcin 387, 302502_2.0009.387"
+                  placeholder="np. Ciechanów, Sulęcin 387"
                   autoComplete="off"
                   spellCheck="false"
                 />

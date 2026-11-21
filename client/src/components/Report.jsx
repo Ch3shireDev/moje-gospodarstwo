@@ -4,6 +4,7 @@ import MapView from './MapView.jsx';
 import Knowledge from './Knowledge.jsx';
 import { KNOWLEDGE } from '../knowledge.js';
 import { fmtDate, fmtDateTime, n, signed } from '../format.js';
+import { downloadIcs } from '../calendar.js';
 
 // Raport dla rolnika: najpierw proste odpowiedzi (jak jest, dlaczego, co zrobić),
 // a liczby, metodyka i źródła są zwinięte w "Szczegóły" – dla doradcy i dociekliwych.
@@ -267,6 +268,17 @@ export default function Report({ report, onSave, onBack }) {
               </li>
             ))}
           </ul>
+          {/* Tylko na telefonie: plik .ics otwiera się w kalendarzu i dodaje przypomnienia. */}
+          <button
+            type="button"
+            className="btn-secondary mobile-only no-print"
+            onClick={() => downloadIcs(report.nextCheck, {
+              place: parcel ? `działka ${parcel.number} (${parcel.region})` : null,
+              url: window.location.href,
+            })}
+          >
+            Dodaj przypomnienia do kalendarza
+          </button>
         </section>
       )}
 

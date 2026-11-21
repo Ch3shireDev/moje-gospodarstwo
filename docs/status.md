@@ -24,7 +24,7 @@ Wszystko z bezpłatnych danych publicznych, w mniej niż 30 sekund, bez znajomo�
   - **przyczyny** potwierdzone danymi,
   - **co zrobić** w grupach *zatrzymaj wodę → uprawa → podlewanie*, każda rada z rozwijanym „Dlaczego i jak?” i informacją, na jakich danych się opiera,
   - **które uprawy na tej glebie rzadziej miały suszę** w ostatnich 10 sezonach (np. „zamiast ziemniaka mniej ryzykowne byłyby zboża ozime”) – jako podpowiedź, nie nakaz,
-  - **kiedy sprawdzić ponownie**: zakładamy 2–3 sprawdzenia w roku (przedwiośnie, przed siewem, przed zbiorem),
+  - **kiedy sprawdzić ponownie**: zakładamy 2–3 sprawdzenia w roku (przedwiośnie, przed siewem, przed zbiorem); na telefonie jednym przyciskiem trafiają do kalendarza jako przypomnienia (plik `.ics`),
   - zwinięte **szczegóły dla doradcy**: wskaźniki, porównanie z 10 latami, zdjęcia satelitarne, teren, ograniczenia, źródła.
 - **Raport PDF** generowany w przeglądarce (A4: szkic działki, stan wody, najważniejsze rady, wykresy, zdjęcia satelitarne, przyczyny, rekomendacje, ograniczenia, źródła, metodyka).
 - **Aplikacja na telefon (PWA)**: zwijany panel na dole ekranu z dużym przyciskiem „Analizuj działkę N”, można ją dodać do ekranu głównego.

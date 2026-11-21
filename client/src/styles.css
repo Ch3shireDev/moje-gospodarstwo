@@ -487,3 +487,10 @@ a.brand:hover h1 { text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 520px) {
   .crop-table .col-fao { display: none; }
 }
+
+/* Tylko na telefonie / tablecie (ekran dotykowy bez myszy). */
+.mobile-only { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .mobile-only { display: inline-flex; align-items: center; justify-content: center; }
+  .next-checks + .mobile-only { margin-top: 10px; width: 100%; }
+}

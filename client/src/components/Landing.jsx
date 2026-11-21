@@ -19,20 +19,24 @@ export default function Landing({ examples = [], lastReport, onSearch, onStart, 
           Za darmo, bez zakładania konta, z publicznych danych.
         </p>
         <form className="hero-search" onSubmit={submit} role="search">
-          <label htmlFor="landing-search" className="sr-only">Miejscowość albo numer działki</label>
-          <input
+                    <input
             id="landing-search"
             type="search"
             enterKeyHint="search"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Wpisz miejscowość albo numer działki, np. Ciechanów"
+            placeholder="Region lub numer działki"
+            aria-describedby="landing-search-hint"
+            aria-label="Region lub numer działki"
             autoComplete="off"
             spellCheck="false"
           />
           <button type="submit" className="btn-primary">{text.trim() ? 'Szukaj' : 'Otwórz mapę'}</button>
         </form>
-        <p className="small muted hero-hint">Możesz wpisać miasto, gminę, powiat albo województwo (np. „pomorskie”) – potem klikniesz swoje pole na mapie.</p>
+        <p id="landing-search-hint" className="small muted hero-hint">
+          Wpisz miejscowość, gminę, powiat albo województwo (np. „Ciechanów”, „pomorskie”) – mapa pokaże to miejsce, a Ty klikniesz swoje pole.
+          Możesz też od razu podać numer działki, np. „Sulęcin 387” albo „302502_2.0009.387”.
+        </p>
         {lastReport && (
           <button type="button" className="link-btn" onClick={onOpenReport}>
             Wróć do ostatniej analizy: {lastReport.place?.parcel ? `działka ${lastReport.place.parcel.number}` : lastReport.place?.label}, {fmtDate(lastReport.date)}
