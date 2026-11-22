@@ -1,9 +1,10 @@
 // Opcjonalnie: LLM przepisuje wynik reguł na ludzki język.
 // Bez ANTHROPIC_API_KEY zwraca null i używamy szablonu z engine.js.
 // LLM niczego nie wylicza i nie wymyśla – dostaje gotowe liczby i akcje.
+import { env } from './platform.js';
 
 export async function llmSummary(assessment, place, fetchImpl = fetch) {
-  const key = process.env.ANTHROPIC_API_KEY;
+  const key = env.ANTHROPIC_API_KEY;
   if (!key) return null;
 
   const facts = {
@@ -30,7 +31,7 @@ export async function llmSummary(assessment, place, fetchImpl = fetch) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: process.env.LLM_MODEL || 'claude-haiku-5-5',
+        model: env.LLM_MODEL || 'claude-haiku-5-5',
         // Bez "myślenia": inaczej tokeny rozumowania zjadają limit i tekst urywa się w pół zdania.
         thinking: { type: 'disabled' },
         max_tokens: 1024,

@@ -5,6 +5,7 @@ import Knowledge from './Knowledge.jsx';
 import { KNOWLEDGE } from '../knowledge.js';
 import { fmtDate, fmtDateTime, n, signed } from '../format.js';
 import { downloadIcs } from '../calendar.js';
+import { saveFile, isNativeApp } from '../saveFile.js';
 import { importFresh } from '../lazy.js';
 
 // Raport dla rolnika: najpierw proste odpowiedzi (jak jest, dlaczego, co zrobić),
@@ -26,11 +27,7 @@ function openKnowledge(id) {
 
 function downloadJson(report) {
   const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `raport-${report.place.parcel?.id?.replace(/[^\w.-]/g, '_') ?? 'punkt'}-${report.date}.json`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  return saveFile(blob, `raport-${report.place.parcel?.id?.replace(/[^\w.-]/g, '_') ?? 'punkt'}-${report.date}.json`);
 }
 
 /** Jedna rada: polecenie na wierzchu, "dlaczego i jak" po rozwinięciu. */
@@ -275,7 +272,7 @@ export default function Report({ report, onSave, onBack }) {
             className="btn-secondary mobile-only no-print"
             onClick={() => downloadIcs(report.nextCheck, {
               place: parcel ? `działka ${parcel.number} (${parcel.region})` : null,
-              url: window.location.href,
+              url: isNativeApp() ? null : window.location.href, // w aplikacji adres https://localhost nic nie da
             })}
           >
             Dodaj przypomnienia do kalendarza

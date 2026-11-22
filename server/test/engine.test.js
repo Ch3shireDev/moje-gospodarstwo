@@ -128,12 +128,12 @@ test('Sentinel-2: sceny z STAC bez duplikatów, offset tylko gdy DN ≥ 1000', (
   assert.equal(effectiveOffset([1450, 1700], { scale: 0.0001, offset: -0.1 }), -0.1);
 });
 
-test('COG: nagłówek TIFF i kafel Deflate z predyktorem', () => {
+test('COG: nagłówek TIFF i kafel Deflate z predyktorem', async () => {
   // Minimalny TIFF: 2×1 kafel 16-bit, predyktor 2. Wartości 10, 15 -> różnice 10, 5.
   const tile = Buffer.alloc(4);
   tile.writeUInt16LE(10, 0);
   tile.writeUInt16LE(5, 2);
-  const arr = decodeTile(deflateSync(tile), { compression: 8, predictor: 2, bitsPerSample: 16, tileWidth: 2, tileHeight: 1 }, true);
+  const arr = await decodeTile(deflateSync(tile), { compression: 8, predictor: 2, bitsPerSample: 16, tileWidth: 2, tileHeight: 1 }, true);
   assert.deepEqual([...arr], [10, 15]);
   assert.throws(() => parseTiffHeader(Buffer.from('XX')), /TIFF/);
 });
@@ -310,9 +310,9 @@ test('PNG: poprawny nagłówek, CRC, powiększenie z obrysem; skala NDVI', async
   const { encodePng, crc32, upscaleWithOutline } = await import('../src/png.js');
   const { ndviColor } = await import('../src/sources/sentinel.js');
   assert.equal(crc32(Buffer.from('IEND')), 0xae426082);
-  const png = encodePng(new Uint8Array([255, 0, 0, 0, 255, 0]), 2, 1);
+  const png = await encodePng(new Uint8Array([255, 0, 0, 0, 255, 0]), 2, 1);
   assert.deepEqual([...png.subarray(0, 8)], [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-  assert.equal(png.readUInt32BE(16), 2); // szerokość z IHDR
+  assert.equal(new DataView(png.buffer, png.byteOffset).getUint32(16), 2); // szerokość z IHDR
   const up = upscaleWithOutline(new Uint8Array(2 * 2 * 3), 2, 2, 4, [[[0, 0], [2, 0]]]);
   assert.equal(up.w, 8);
   assert.deepEqual([...up.rgb.subarray(0, 3)], [255, 230, 0]); // linia obrysu
@@ -418,4 +418,12 @@ test('IMGW: odpowiedź "Brak ostrzeżeń" (obiekt zamiast tablicy) nie wywraca r
   assert.deepEqual(warningsForCounty(none, '3025'), []);
   assert.deepEqual(hydroWarningsFor(none, 'wielkopolskie'), []);
   assert.deepEqual(warningsForCounty(null, '3025'), []);
+});
+
+test('Platforma (Node i przeglądarka): zlib w obie strony, SHA-1, base64', async () => {
+  const { inflate, deflate, sha1hex, toBase64 } = await import('../src/platform.js');
+  const data = new TextEncoder().encode('zatrzymaj wodę '.repeat(50));
+  assert.deepEqual(await inflate(await deflate(data)), data);
+  assert.equal(await sha1hex('abc'), 'a9993e364706816aba3e25717850c26c9cd0d89d');
+  assert.equal(toBase64(new Uint8Array([104, 105])), 'aGk=');
 });

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Moje Gospodarstwo</string>
+    <string name="title_activity_main">Moje Gospodarstwo</string>
+    <string name="package_name">pl.mojegospodarstwo.app</string>
+    <string name="custom_url_scheme">pl.mojegospodarstwo.app</string>
+</resources>

@@ -1,4 +1,5 @@
 import { cachedFetch } from '../http.js';
+import { env } from '../platform.js';
 
 // Wyszukiwarka miejsc: Nominatim (OpenStreetMap). Zamienia tekst typu „Ciechanów”, „mazowsze”,
 // „pomorskie” na listę miejsc z zasięgiem na mapie. Dane OSM na licencji ODbL.
@@ -6,7 +7,7 @@ import { cachedFetch } from '../http.js';
 // (https://operations.osmfoundation.org/policies/nominatim/). Dlatego kolejka i cache na dysku.
 
 const DAY = 24 * 3600_000;
-const BASE = process.env.NOMINATIM_URL || 'https://nominatim.openstreetmap.org';
+const BASE = env.NOMINATIM_URL || 'https://nominatim.openstreetmap.org';
 
 export const ATTRIBUTION = { name: 'Nominatim / OpenStreetMap', url: 'https://www.openstreetmap.org/copyright', licence: 'ODbL 1.0' };
 

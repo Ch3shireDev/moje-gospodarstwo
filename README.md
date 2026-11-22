@@ -57,6 +57,28 @@ Testy: `npm test`.
 
 Użytkownik niczego nie instaluje – wystarczy przeglądarka (Chrome, Firefox, Edge, Safari, Opera). Interfejs jest responsywny, więc całość da się obsłużyć także na telefonie. Na telefonie aplikację można dodać do ekranu głównego jako PWA (działa po `npm run build`).
 
+### Aplikacja na Androida (APK, bez serwera)
+
+Ta sama aplikacja jako APK ([Capacitor](https://capacitorjs.com/)). Backend z `server/src` jest wtedy zbundlowany do frontu i liczy raport **na telefonie**, więc własny serwer nie jest potrzebny. Internet nadal jest, bo dane pochodzą z publicznych API. Różnice względem wersji webowej:
+
+- zapytania do GUGiK, IMGW, IUNG, Open-Meteo, SoilGrids, NASA POWER i Overpass idą przez natywny HTTP Androida (`CapacitorHttp`), więc CORS ich nie blokuje. Pliki binarne (kafle OpenFreeMap, Sentinel-2 COG z AWS) idą zwykłym `fetch` WebView, bo te serwery mają CORS;
+- cache archiwów (pogoda, gleba, NDVI) trzymany jest w IndexedDB na telefonie, a nie w `server/.cache`;
+- **bez podsumowania LLM**: w APK nie trzymamy żadnych kluczy API. Zawsze używany jest szablon;
+- PDF, JSON i plik kalendarza (.ics) zapisują się przez systemowe „Udostępnij” (Pliki, Gmail, Kalendarz…);
+- bez service workera PWA, bo pliki aplikacji są w APK.
+
+**Gotowe APK:** zakładka *Actions* → workflow „Android APK” → artefakt `moje-gospodarstwo-debug-apk` (budowany przy każdym pushu i PR). APK jest debugowe (podpisane kluczem debug), więc na telefonie trzeba zezwolić na instalację z nieznanych źródeł.
+
+**Lokalnie** (Node 22+, JDK 21, Android SDK z platformą 36, np. z Android Studio):
+
+```bash
+npm run setup
+npm run apk            # = vite build --mode android && cap sync android && gradlew assembleDebug
+# wynik: client/android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+Podgląd na telefonie przez USB: `cd client && npx cap run android`. Projekt Android Studio: `cd client && npx cap open android`. Po każdej zmianie frontu albo backendu wystarczy `npm --prefix client run build:android`, bo katalog `client/android` jest w repo.
+
 ### Open-Meteo zwraca 429 (limit zapytań)
 
 Darmowe API Open-Meteo ma limit **na adres IP**: 600 zapytań na minutę, 5 000 na godzinę, 10 000 na dobę. Zapytanie o więcej niż 2 tygodnie danych liczy się jak kilka. Na hackathonie wszyscy wychodzą do internetu z jednego IP, więc limit szybko się kończy. Aplikacja wtedy sama przełącza historię pogody na NASA POWER (mniej dokładne) i pisze o tym w raporcie. Żeby wróciło ERA5:
@@ -97,8 +119,11 @@ Kolejność analizy: ocena sytuacji wodnej → przyczyny → rekomendacje retenc
 
 ```
 client/  React + Vite + MapLibre + PWA: formularz (działka, uprawa, data, gleba), mapa, raport, druk
+client/android/       projekt Capacitor (APK); client/src/local/ – backend uruchamiany na telefonie
 server/src/
-  index.js            HTTP (node:http): /api/meta, /api/report, statyczny front
+  index.js            HTTP (node:http): statyczny front + /api/* z api.js
+  api.js              endpointy /api/* bez HTTP – wspólne dla serwera i aplikacji na Androida
+  platform.js         zlib, SHA-1, base64 na API webowych – backend działa w Node i w WebView
   report.js           rozpoznanie działki, równoległe pobieranie z limitami czasu, statusy źródeł
   engine.js           składa analizę: ocena -> przyczyny -> rekomendacje -> niepewność
   analysis/water.js   KBW 61 dni, okresy i progi IUNG, bilans strefy korzeni FAO-56
@@ -107,7 +132,7 @@ server/src/
   analysis/recommend.js retencja, agrotechnika, nawadnianie, pogoda
   weather.js          szereg dobowy: Open-Meteo (ERA5 + prognoza), zapasowo NASA POWER
   et0.js              ET0 FAO-56 Penman-Monteith i Hargreaves
-  cog.js              czytnik Cloud Optimized GeoTIFF (HTTP Range + node:zlib)
+  cog.js              czytnik Cloud Optimized GeoTIFF (HTTP Range + DecompressionStream)
   geo.js              PUWG 1992, UTM, pole, punkty w działce, odległości
   data/iungKbw.js     progi KBW IUNG (generowane z susza.iung.pulawy.pl/progi)
   data/crops.js       uprawy: Kc i głębokość korzeni (FAO-56), kalendarz faz
@@ -119,7 +144,7 @@ GET /api/report?parcel=302502_2.0009.387&date=2025-05-31&crop=zboza_ozime[&soil=
 GET /api/report?lat=52.10&lon=17.30&date=2025-05-31&crop=ziemniak
 ```
 
-Gdy numer pasuje do kilku działek, API zwraca 300 z listą kandydatów. Backend nie ma zależności npm. Wyniki pobrane z archiwów (pogoda z lat ubiegłych, gleba, NMT, statystyki scen satelitarnych) są zapisywane w `server/.cache`, więc kolejne analizy tego miejsca są szybsze i nie zużywają limitów API.
+Gdy numer pasuje do kilku działek, API zwraca 300 z listą kandydatów. Backend nie ma zależności npm i używa tylko API dostępnych też w przeglądarce (poza `index.js` i `diskStore.js`). Wyniki pobrane z archiwów (pogoda z lat ubiegłych, gleba, NMT, statystyki scen satelitarnych) są zapisywane w `server/.cache` (w APK: IndexedDB), więc kolejne analizy tego miejsca są szybsze i nie zużywają limitów API.
 
 ## 4–5. Źródła danych i aktualność
 
@@ -151,11 +176,12 @@ Wynik i rekomendacje zawsze liczy aplikacja z pobranych danych. Nie ma gotowych 
 | React, React DOM | UI | MIT |
 | Vite, @vitejs/plugin-react | build | MIT |
 | vite-plugin-pwa | instalacja jako PWA | MIT |
+| Capacitor (@capacitor/core, cli, android, filesystem, share) | aplikacja na Androida (APK), natywny HTTP, zapis i udostępnianie plików | MIT |
 | MapLibre GL JS | mapa | BSD-3-Clause |
 | pdfmake (ładowany dopiero przy pobieraniu raportu) | raport PDF generowany w przeglądarce | MIT |
 | Roboto (font dołączony do pdfmake) | polskie znaki w PDF | Apache-2.0 |
 | Node.js (bez zależności npm po stronie serwera) | backend | MIT |
-| Anthropic Messages API (opcjonalnie) | przepisanie gotowego wyniku na prosty język | usługa płatna – patrz niżej |
+| Anthropic Messages API (opcjonalnie, tylko wersja z serwerem; w APK wyłączone) | przepisanie gotowego wyniku na prosty język | usługa płatna – patrz niżej |
 
 **Sztuczna inteligencja:**
 - *W aplikacji:* opcjonalnie model Claude (Anthropic) dostaje gotowe liczby i listę działań z silnika reguł i pisze 2–3 zdania podsumowania. Model niczego nie liczy i nie wybiera działań. Bez klucza `ANTHROPIC_API_KEY` podsumowanie powstaje z szablonu, a aplikacja działa w pełni.

@@ -1,5 +1,6 @@
 // Przypomnienia w kalendarzu telefonu: plik .ics (iCalendar, RFC 5545) generowany w przeglądarce.
 // Bez serwera, konta i danych osobowych – kalendarz sam przypomni o kolejnym sprawdzeniu pola.
+import { saveFile } from './saveFile.js';
 
 const esc = (s) => String(s ?? '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
 
@@ -61,12 +62,5 @@ export function buildIcs(checks, { place, url }) {
 
 export function downloadIcs(checks, opts) {
   const blob = new Blob([buildIcs(checks, opts)], { type: 'text/calendar;charset=utf-8' });
-  const href = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = href;
-  a.download = 'przypomnienia-moje-gospodarstwo.ics';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(href), 10_000);
+  return saveFile(blob, 'przypomnienia-moje-gospodarstwo.ics');
 }

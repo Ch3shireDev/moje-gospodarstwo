@@ -2,8 +2,8 @@
 // Obsługuje to, czego używa archiwum Sentinel-2 L2A na AWS (sentinel-cogs): klasyczny TIFF (nie BigTIFF),
 // kafle, kompresja Deflate (8) lub brak (1), predyktor poziomy (2), 8 lub 16 bitów, jedna próbka na piksel.
 // Pobiera tylko nagłówek i kafle pokrywające działkę (HTTP Range).
-import { inflateSync } from 'node:zlib';
 import { fetchRange } from './http.js';
+import { env, inflate, ascii, view } from './platform.js';
 
 const HEADER_BYTES = 16384;
 const headerCache = new Map();
@@ -11,17 +11,18 @@ const headerCache = new Map();
 const TYPE_SIZE = { 1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 7: 1, 11: 4, 12: 8, 16: 8 };
 
 function reader(buf, le) {
+  const dv = view(buf);
   return {
-    u8: (o) => buf.readUInt8(o),
-    u16: (o) => (le ? buf.readUInt16LE(o) : buf.readUInt16BE(o)),
-    u32: (o) => (le ? buf.readUInt32LE(o) : buf.readUInt32BE(o)),
-    f64: (o) => (le ? buf.readDoubleLE(o) : buf.readDoubleBE(o)),
+    u8: (o) => dv.getUint8(o),
+    u16: (o) => dv.getUint16(o, le),
+    u32: (o) => dv.getUint32(o, le),
+    f64: (o) => dv.getFloat64(o, le),
   };
 }
 
 /** Parsuje IFD-y z bufora nagłówka. Zwraca listę poziomów (0 = pełna rozdzielczość, dalej podglądy). */
 export function parseTiffHeader(buf) {
-  const order = buf.toString('ascii', 0, 2);
+  const order = ascii(buf, 0, 2);
   if (order !== 'II' && order !== 'MM') throw new Error('COG: to nie jest TIFF');
   const le = order === 'II';
   const r = reader(buf, le);
@@ -68,7 +69,7 @@ export function parseTiffHeader(buf) {
       counts: tags[325],
       pixelScale: Array.isArray(tags[33550]) ? tags[33550] : null,
       tiePoint: Array.isArray(tags[33922]) ? tags[33922] : null,
-      nodata: Array.isArray(tags[42113]) ? Number(Buffer.from(tags[42113]).toString('ascii').replace(/\0/g, '')) : null,
+      nodata: Array.isArray(tags[42113]) ? Number(ascii(Uint8Array.from(tags[42113])).replace(/\0/g, '')) : null,
     });
     const nextPos = off + 2 + n * 12;
     off = nextPos + 4 <= buf.length ? r.u32(nextPos) : 0;
@@ -135,8 +136,8 @@ export function levelForResolution(header, resM) {
   return best;
 }
 
-export function decodeTile(raw, ifd, le) {
-  const data = ifd.compression === 8 ? inflateSync(raw) : ifd.compression === 1 ? raw : null;
+export async function decodeTile(raw, ifd, le) {
+  const data = ifd.compression === 8 ? await inflate(raw) : ifd.compression === 1 ? raw : null;
   if (!data) throw new Error(`COG: nieobsługiwana kompresja ${ifd.compression}`);
   const w = ifd.tileWidth;
   const h = ifd.tileHeight;
@@ -183,8 +184,8 @@ export async function readWindow(url, level, col0, row0, col1, row1) {
       const count = ifd.counts[t];
       jobs.push((async () => {
         if (!count) return; // pusty kafel = nodata
-        const raw = await fetchRange(url, offset, offset + count - 1, { timeoutMs: Number(process.env.COG_TILE_TIMEOUT_MS) || 20000 });
-        const tile = decodeTile(raw, ifd, header.le);
+        const raw = await fetchRange(url, offset, offset + count - 1, { timeoutMs: Number(env.COG_TILE_TIMEOUT_MS) || 20000 });
+        const tile = await decodeTile(raw, ifd, header.le);
         for (let y = Math.max(row0, ty * ifd.tileHeight); y <= Math.min(row1, (ty + 1) * ifd.tileHeight - 1); y++) {
           for (let x = Math.max(col0, tx * ifd.tileWidth); x <= Math.min(col1, (tx + 1) * ifd.tileWidth - 1); x++) {
             out[(y - row0) * cols + (x - col0)] = tile[(y - ty * ifd.tileHeight) * ifd.tileWidth + (x - tx * ifd.tileWidth)];

@@ -1,6 +1,6 @@
-// Minimalny koder PNG (RGB, 8 bit) na node:zlib – do obrazów satelitarnych działki. Bez zależności.
+// Minimalny koder PNG (RGB, 8 bit) – do obrazów satelitarnych działki. Bez zależności, działa też w przeglądarce.
 // Specyfikacja: W3C PNG (chunki IHDR, IDAT, IEND, CRC-32).
-import { deflateSync } from 'node:zlib';
+import { deflate, toBase64, concat, view } from './platform.js';
 
 const CRC_TABLE = (() => {
   const t = new Uint32Array(256);
@@ -18,39 +18,38 @@ export function crc32(buf) {
   return (c ^ 0xffffffff) >>> 0;
 }
 
+const u32be = (n) => {
+  const b = new Uint8Array(4);
+  view(b).setUint32(0, n);
+  return b;
+};
+
 function chunk(type, data) {
-  const len = Buffer.alloc(4);
-  len.writeUInt32BE(data.length);
-  const td = Buffer.concat([Buffer.from(type, 'ascii'), data]);
-  const crc = Buffer.alloc(4);
-  crc.writeUInt32BE(crc32(td));
-  return Buffer.concat([len, td, crc]);
+  const td = concat([new TextEncoder().encode(type), data]);
+  return concat([u32be(data.length), td, u32be(crc32(td))]);
 }
 
-/** rgb: Uint8Array długości w*h*3. Zwraca Buffer z plikiem PNG. */
-export function encodePng(rgb, w, h) {
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(w, 0);
-  ihdr.writeUInt32BE(h, 4);
+/** rgb: Uint8Array długości w*h*3. Zwraca Uint8Array z plikiem PNG. */
+export async function encodePng(rgb, w, h) {
+  const ihdr = new Uint8Array(13);
+  view(ihdr).setUint32(0, w);
+  view(ihdr).setUint32(4, h);
   ihdr[8] = 8; // bity na kanał
   ihdr[9] = 2; // RGB
-  ihdr[10] = 0;
-  ihdr[11] = 0;
-  ihdr[12] = 0;
-  const raw = Buffer.alloc((w * 3 + 1) * h);
+  const raw = new Uint8Array((w * 3 + 1) * h);
   for (let y = 0; y < h; y++) {
     raw[y * (w * 3 + 1)] = 0; // filtr: brak
-    Buffer.from(rgb.buffer, rgb.byteOffset + y * w * 3, w * 3).copy(raw, y * (w * 3 + 1) + 1);
+    raw.set(rgb.subarray(y * w * 3, (y + 1) * w * 3), y * (w * 3 + 1) + 1);
   }
-  return Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+  return concat([
+    new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     chunk('IHDR', ihdr),
-    chunk('IDAT', deflateSync(raw, { level: 9 })),
-    chunk('IEND', Buffer.alloc(0)),
+    chunk('IDAT', await deflate(raw)),
+    chunk('IEND', new Uint8Array(0)),
   ]);
 }
 
-export const pngDataUrl = (rgb, w, h) => `data:image/png;base64,${encodePng(rgb, w, h).toString('base64')}`;
+export const pngDataUrl = async (rgb, w, h) => `data:image/png;base64,${toBase64(await encodePng(rgb, w, h))}`;
 
 /**
  * Powiększa obraz (najbliższy sąsiad – piksele 20 m zostają ostre, bez "rozmycia" udającego szczegóły)

@@ -1,0 +1,45 @@
+# Buduje APK (debug) aplikacji na Androida i udostępnia go jako artefakt w zakładce Actions.
+name: Android APK
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Testy backendu
+        run: npm test
+
+      - name: Zależności frontu
+        run: npm --prefix client install --no-audit --no-fund
+
+      - name: Build web (tryb android) + cap sync
+        run: npm --prefix client run build:android
+
+      - name: Gradle assembleDebug
+        working-directory: client/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: moje-gospodarstwo-debug-apk
+          path: client/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

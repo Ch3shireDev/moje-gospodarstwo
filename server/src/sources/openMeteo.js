@@ -1,4 +1,5 @@
 import { cachedFetch } from '../http.js';
+import { env as processEnv } from '../platform.js';
 
 // Open-Meteo: prognoza (z dniami wstecz) i archiwum reanalizy ERA5 / ERA5-Land.
 // Licencja danych CC BY 4.0, darmowe API do użytku niekomercyjnego (patrz README).
@@ -22,7 +23,7 @@ export const ATTRIBUTION = { name: 'Open-Meteo.com', url: 'https://open-meteo.co
 // Adresy API. Domyślnie darmowe (limit na IP: 600/min, 5 000/h, 10 000/dobę).
 // OPEN_METEO_API_KEY – klucz planu komercyjnego: zapytania idą na serwery "customer-" bez limitu na IP.
 // OPEN_METEO_FORECAST_URL / OPEN_METEO_ARCHIVE_URL – własna instancja Open-Meteo (np. http://localhost:8080).
-export function endpoints(env = process.env) {
+export function endpoints(env = processEnv) {
   const key = env.OPEN_METEO_API_KEY?.trim();
   const forecast = env.OPEN_METEO_FORECAST_URL?.replace(/\/$/, '') || (key ? 'https://customer-api.open-meteo.com' : 'https://api.open-meteo.com');
   const archive = env.OPEN_METEO_ARCHIVE_URL?.replace(/\/$/, '') || (key ? 'https://customer-archive-api.open-meteo.com' : 'https://archive-api.open-meteo.com');

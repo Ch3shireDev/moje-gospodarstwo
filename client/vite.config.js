@@ -1,11 +1,20 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { fileURLToPath } from 'node:url';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig({
+// `vite build --mode android` – paczka dla aplikacji Capacitor: backend liczy się na telefonie (__LOCAL_API__),
+// a service worker PWA jest zbędny (pliki i tak są w APK). W zwykłym buildzie kod backendu nie trafia do paczki.
+export default defineConfig(({ mode }) => ({
+  define: { __LOCAL_API__: JSON.stringify(mode === 'android') },
+  resolve: {
+    alias: {
+      'virtual-local-api': fileURLToPath(new URL(mode === 'android' ? './src/local/localApi.js' : './src/local/noLocalApi.js', import.meta.url)),
+    },
+  },
   plugins: [
     react(),
-    VitePWA({
+    mode !== 'android' && VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
@@ -57,5 +66,6 @@ export default defineConfig({
     host: true, // żeby otworzyć z telefonu w tej samej sieci
     // W docker-compose.dev.yml API_URL=http://server:8787
     proxy: { '/api': process.env.API_URL || 'http://localhost:8787' },
+    fs: { allow: ['..'] }, // tryb android importuje backend z ../server/src
   },
-});
+}));

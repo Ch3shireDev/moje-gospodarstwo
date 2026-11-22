@@ -49,7 +49,7 @@ export function parseQuery(params, today = todayWarsaw()) {
   return { parcelQuery: parcelQuery || null, lat, lon, date, crop, soil };
 }
 
-const defaultDeps = {
+export const defaultDeps = {
   uldk: uldkDefault, imgw: imgwDefault, iung: iungDefault, soilgrids: soilgridsDefault,
   nmt: nmtDefault, osm: osmDefault, sentinel: sentinelDefault, weather: getWeatherSeries, llmSummary: llmDefault,
 };

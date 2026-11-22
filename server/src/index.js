@@ -2,11 +2,11 @@ import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildReport, parseQuery, lookupParcel, InputError, ParcelChoice, todayWarsaw, minDate } from './report.js';
-import { EXAMPLES } from './demo.js';
-import { SOIL_CATEGORIES } from './engine.js';
-import { CROPS, DEFAULT_CROP } from './data/crops.js';
-import { searchPlaces } from './sources/nominatim.js';
+import { handleApi } from './api.js';
+import { setDiskStore } from './http.js';
+import { fileStore } from './diskStore.js';
+
+setDiskStore(fileStore);
 
 const PORT = Number(process.env.PORT) || 8787;
 const DIST = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/dist');
@@ -67,40 +67,12 @@ async function serveStatic(res, urlPath) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
   try {
-    if (url.pathname === '/api/health') return sendJson(res, 200, { ok: true });
-    if (url.pathname === '/api/meta') {
-      return sendJson(res, 200, {
-        crops: Object.entries(CROPS).map(([id, c]) => ({ id, label: c.label })),
-        defaultCrop: DEFAULT_CROP,
-        soils: Object.entries(SOIL_CATEGORIES).map(([id, s]) => ({ id, label: s.label })),
-        examples: EXAMPLES,
-        today: todayWarsaw(),
-        minDate: minDate(todayWarsaw()),
-      });
-    }
-    if (url.pathname === '/api/parcel') {
-      return sendJson(res, 200, await lookupParcel(url.searchParams));
-    }
-    if (url.pathname === '/api/places') {
-      const q = (url.searchParams.get('q') ?? '').trim();
-      if (q.length < 2 || q.length > 80) throw new InputError('Wpisz nazwę miejscowości, gminy, powiatu albo województwa.');
-      try {
-        return sendJson(res, 200, { places: await searchPlaces(q) });
-      } catch (err) {
-        throw Object.assign(new Error(`Wyszukiwarka miejsc (OpenStreetMap) nie odpowiada: ${err.message}`), { status: 502 });
-      }
-    }
-    if (url.pathname === '/api/report') {
-      const query = parseQuery(url.searchParams);
-      return sendJson(res, 200, await buildReport(query));
-    }
-    if (url.pathname.startsWith('/api/')) return sendJson(res, 404, { error: 'Nie ma takiego endpointu.' });
-    return serveStatic(res, url.pathname);
+    const api = await handleApi(url.pathname, url.searchParams);
+    if (api) return sendJson(res, api.status, api.body);
+    return await serveStatic(res, url.pathname);
   } catch (err) {
-    if (err instanceof ParcelChoice) return sendJson(res, 300, { error: err.message, candidates: err.candidates });
-    const status = err instanceof InputError ? 400 : err.status ?? 500;
-    if (status >= 500) console.error(err);
-    return sendJson(res, status, { error: err.message });
+    console.error(err);
+    return sendJson(res, 500, { error: err.message });
   }
 });
 

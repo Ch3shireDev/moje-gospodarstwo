@@ -55,7 +55,7 @@ function readValue(pbf) {
   pbf.fields(end, (tag, wire) => {
     if (tag === 1) v = new TextDecoder().decode(pbf.bytes());
     else if (tag === 2) {
-      v = pbf.buf.readFloatLE(pbf.pos);
+      v = new DataView(pbf.buf.buffer, pbf.buf.byteOffset, pbf.buf.byteLength).getFloat32(pbf.pos, true);
       pbf.pos += 4;
     } else if (tag === 3) {
       v = pbf.buf.readDoubleLE(pbf.pos);
@@ -97,7 +97,7 @@ export function decodeGeometry(cmds) {
 
 /** Dekoduje kafel: { [nazwaWarstwy]: { extent, features: [{ id, type, props, geometry }] } }. Tylko wybrane warstwy. */
 export function decodeTile(buf, wanted = null) {
-  const pbf = new Pbf(Buffer.isBuffer(buf) ? buf : Buffer.from(buf));
+  const pbf = new Pbf(buf instanceof Uint8Array ? buf : new Uint8Array(buf));
   const layers = {};
   pbf.fields(pbf.buf.length, (tag, wire) => {
     if (tag !== 3) return pbf.skip(wire);
@@ -115,7 +115,7 @@ export function decodeTile(buf, wanted = null) {
     layers[layer.name] = {
       extent: layer.extent,
       features: layer.raw.map((bytes) => {
-        const f = new Pbf(Buffer.from(bytes));
+        const f = new Pbf(bytes);
         const feat = { id: null, type: 0, props: {}, cmds: [] };
         f.fields(bytes.length, (ft, fw) => {
           if (ft === 1) feat.id = f.varint();

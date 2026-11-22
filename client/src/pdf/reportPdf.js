@@ -3,6 +3,7 @@
 // Kolejność treści jak w raporcie na ekranie i w wymaganiach KOWR:
 // ocena -> przyczyny -> retencja -> agrotechnika -> nawadnianie, potem ograniczenia, źródła, metodyka.
 import { fmtDate, fmtDateTime, n, signed } from '../format.js';
+import { saveFile } from '../saveFile.js';
 
 const C = {
   ink: '#1b2a21',
@@ -54,7 +55,8 @@ export async function downloadReportPdf(report) {
   const doc = buildDocDefinition(report);
   const id = report.place.parcel?.id?.replace(/[^\w.-]/g, '_') ?? 'punkt';
   const name = `raport-wodny-${id}-${fmtDate(report.date).replaceAll('.', '-')}.pdf`;
-  await new Promise((resolve) => pdfMake.createPdf(doc).download(name, resolve));
+  const blob = await new Promise((resolve) => pdfMake.createPdf(doc).getBlob(resolve));
+  await saveFile(blob, name);
 }
 
 // ---------- elementy wspólne ----------

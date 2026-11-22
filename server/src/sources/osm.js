@@ -1,4 +1,5 @@
 import { cachedFetch, memoDisk } from '../http.js';
+import { binaryFetch } from '../platform.js';
 import { bboxOf, distanceToLineM, interiorPoint } from '../geo.js';
 import { decodeTile, lonLatToTile, tilePointToLonLat } from '../mvt.js';
 
@@ -59,9 +60,9 @@ async function tileWaters(template, x, y) {
   const url = template.replace('{z}', TILE_Z).replace('{x}', x).replace('{y}', y);
   // Wynik dekodowania (same wody, w WGS84) trzymamy na dysku – kafel się nie zmienia w obrębie wersji.
   return memoDisk(`ofm:${url}`, 30 * 24 * 3600_000, async () => {
-    const res = await fetch(url, { signal: AbortSignal.timeout(8000), headers: { 'User-Agent': 'moje-gospodarstwo/0.2' } });
+    const res = await binaryFetch(url, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) throw new Error(`HTTP ${res.status} z tiles.openfreemap.org`);
-    const layers = decodeTile(Buffer.from(await res.arrayBuffer()), ['waterway', 'water', 'landcover']);
+    const layers = decodeTile(new Uint8Array(await res.arrayBuffer()), ['waterway', 'water', 'landcover']);
     return tileLayersToElements(layers, x, y);
   });
 }

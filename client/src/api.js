@@ -28,6 +28,21 @@ export class NetworkError extends Error {
   }
 }
 
+// Aplikacja mobilna (`vite build --mode android`): zamiast serwera liczymy raport na telefonie.
+// __LOCAL_API__ to stała z vite.config.js – w zwykłym buildzie webowym ta gałąź znika razem z kodem backendu.
+/* global __LOCAL_API__ */
+const LOCAL_API = __LOCAL_API__;
+
+/** Lokalny "serwer": ten sam kształt odpowiedzi co fetch -> { status, ok, json() }. */
+async function localFetch(url, signal) {
+  const { localGet } = await import('virtual-local-api');
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) return reject(new DOMException('Przerwano', 'AbortError'));
+    signal.addEventListener('abort', () => reject(new DOMException('Przerwano', 'AbortError')), { once: true });
+    localGet(url).then(({ status, body }) => resolve({ status, ok: status >= 200 && status < 300, json: async () => body }), reject);
+  });
+}
+
 const offline = () => typeof navigator !== 'undefined' && navigator.onLine === false;
 
 /**
@@ -49,7 +64,8 @@ async function getJson(url, signal, { timeoutMs = 20_000 } = {}) {
   try {
     let res;
     try {
-      res = await fetch(url, { signal: ctrl.signal });
+      if (LOCAL_API) res = await localFetch(url, ctrl.signal);
+      else res = await fetch(url, { signal: ctrl.signal });
     } catch (e) {
       if (timedOut) throw new NetworkError('timeout');
       if (e.name === 'AbortError') throw e;
@@ -102,7 +118,7 @@ export function fetchParcel(q, signal) {
   return getJson(`/api/parcel?${params}`, signal);
 }
 
-/** Miejsca po nazwie (miejscowość, gmina, powiat, województwo) – Nominatim przez nasz serwer. */
+/** Miejsca po nazwie (miejscowość, gmina, powiat, województwo) – Nominatim przez nasz serwer (albo lokalnie w aplikacji). */
 export function fetchPlaces(text, signal) {
   return getJson(`/api/places?${new URLSearchParams({ q: text })}`, signal).then((b) => b.places ?? []);
 }

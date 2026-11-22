@@ -1,18 +1,21 @@
 // Minimalny fetch z timeoutem i dwupoziomowym cache:
 // - pamięć (szybkie, krótkie TTL: prognozy, ostrzeżenia),
 // - dysk (dane archiwalne i statyczne – nie zmieniają się, a oszczędzają limity zapytań, np. Open-Meteo).
-import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+// Plik działa też w przeglądarce (aplikacja mobilna): magazyn "dysku" wstrzykuje środowisko przez setDiskStore
+// (Node: pliki w server/.cache – diskStore.js; telefon: IndexedDB – client/src/local/idbStore.js).
+import { env, sha1hex, binaryFetch } from './platform.js';
 
 const cache = new Map();
 const MAX_ENTRIES = 500;
 const UA = 'moje-gospodarstwo/0.2 (prototyp KOWR HackNation 2026)';
 
-export const CACHE_DIR =
-  process.env.CACHE_DIR || path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../.cache');
-const diskEnabled = process.env.DISK_CACHE !== '0' && process.env.NODE_ENV !== 'test';
+const diskEnabled = env.DISK_CACHE !== '0' && env.NODE_ENV !== 'test';
+
+/** Magazyn trwały: { get(hash) -> string|undefined, set(hash, string) }. Bez magazynu – tylko pamięć. */
+let store = null;
+export function setDiskStore(s) {
+  store = s;
+}
 
 export class HttpError extends Error {
   constructor(message, status) {
@@ -21,12 +24,12 @@ export class HttpError extends Error {
   }
 }
 
-const keyFile = (key) => path.join(CACHE_DIR, `${createHash('sha1').update(key).digest('hex')}.json`);
-
 async function diskGet(key, ttlMs) {
-  if (!diskEnabled) return undefined;
+  if (!diskEnabled || !store) return undefined;
   try {
-    const { savedAt, value } = JSON.parse(await readFile(keyFile(key), 'utf8'));
+    const raw = await store.get(await sha1hex(key));
+    if (raw == null) return undefined;
+    const { savedAt, value } = JSON.parse(raw);
     if (ttlMs && Date.now() - savedAt > ttlMs) return undefined;
     return value;
   } catch {
@@ -35,10 +38,9 @@ async function diskGet(key, ttlMs) {
 }
 
 async function diskSet(key, value) {
-  if (!diskEnabled) return;
+  if (!diskEnabled || !store) return;
   try {
-    await mkdir(CACHE_DIR, { recursive: true });
-    await writeFile(keyFile(key), JSON.stringify({ savedAt: Date.now(), value }));
+    await store.set(await sha1hex(key), JSON.stringify({ savedAt: Date.now(), value }));
   } catch {
     /* brak zapisu to nie błąd – po prostu nie ma cache */
   }
@@ -95,12 +97,12 @@ export async function cachedFetch(url, { ttlMs = 0, diskTtlMs = 0, as = 'json', 
 
 /** Fragment pliku binarnego (HTTP Range) – do czytania Cloud Optimized GeoTIFF. */
 export async function fetchRange(url, start, end, { timeoutMs = 15000 } = {}) {
-  const res = await fetch(url, {
+  const res = await binaryFetch(url, {
     signal: AbortSignal.timeout(timeoutMs),
-    headers: { 'User-Agent': UA, Range: `bytes=${start}-${end}` },
+    headers: { Range: `bytes=${start}-${end}` },
   });
   if (res.status !== 206 && res.status !== 200) throw new HttpError(`HTTP ${res.status} z ${new URL(url).host}`, res.status);
-  const buf = Buffer.from(await res.arrayBuffer());
+  const buf = new Uint8Array(await res.arrayBuffer());
   // Serwer bez obsługi Range zwraca cały plik (200) – wycinamy żądany fragment.
   return res.status === 200 ? buf.subarray(start, end + 1) : buf;
 }

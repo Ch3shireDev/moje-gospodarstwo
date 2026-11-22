@@ -5,3 +5,4 @@ client/dev-dist
 .env
 *.zip
 *.log
+client/android

@@ -1,7 +1,7 @@
 // Sentinel-2 L2A (Copernicus) z publicznego katalogu Earth Search (Element 84, AWS) – bez konta.
 // Dla działki liczymy NDVI (wigor roślin) i NDMI (wilgotność roślin) z pikseli 20 m,
 // z maską chmur i cieni z klasyfikacji sceny (SCL). Pobieramy tylko kafle z działką.
-import { createHash } from 'node:crypto';
+import { env, sha1hex } from '../platform.js';
 import { cachedFetch, memoDisk } from '../http.js';
 import { projectGeometry, pointInProjected, toUtm } from '../geo.js';
 import { levelForResolution, levelTransform, openCog, readWindow } from '../cog.js';
@@ -79,11 +79,11 @@ function band(asset) {
   return { href: asset.href, scale: rb.scale ?? 0.0001, offset: rb.offset ?? 0 };
 }
 
-const geomHash = (geometry) => createHash('sha1').update(JSON.stringify(geometry)).digest('hex').slice(0, 16);
+const geomHash = async (geometry) => (await sha1hex(JSON.stringify(geometry))).slice(0, 16);
 
 /** Statystyki działki dla sceny. Najpierw maska SCL (mała), pasma dopiero gdy działka jest bezchmurna. */
 export async function parcelStats(scene, geometry, { minClear = 0.5 } = {}) {
-  return memoDisk(`s2:${scene.id}:${geomHash(geometry)}:${minClear}`, Infinity, () => computeStats(scene, geometry, minClear));
+  return memoDisk(`s2:${scene.id}:${await geomHash(geometry)}:${minClear}`, Infinity, () => computeStats(scene, geometry, minClear));
 }
 
 async function computeStats(scene, geometry, minClear) {
@@ -169,7 +169,7 @@ async function computeStats(scene, geometry, minClear) {
  */
 export async function sceneImages(scene, geometry) {
   if (!scene.bands.green || !scene.bands.blue) return null;
-  return memoDisk(`s2img:${scene.id}:${geomHash(geometry)}`, Infinity, () => renderImages(scene, geometry));
+  return memoDisk(`s2img:${scene.id}:${await geomHash(geometry)}`, Infinity, () => renderImages(scene, geometry));
 }
 
 async function renderImages(scene, geometry) {
@@ -234,8 +234,8 @@ async function renderImages(scene, geometry) {
     pixelM: Math.round(tr.px),
     widthM: Math.round(cols * tr.px),
     heightM: Math.round(rows * tr.py),
-    rgb: pngDataUrl(a.rgb, a.w, a.h),
-    ndvi: pngDataUrl(b.rgb, b.w, b.h),
+    rgb: await pngDataUrl(a.rgb, a.w, a.h),
+    ndvi: await pngDataUrl(b.rgb, b.w, b.h),
   };
 }
 
@@ -294,7 +294,7 @@ export async function latestClear(geometry, center, date, { daysBack = 30, maxTr
         // liczy się dalej w tle i trafia do cache na następny raport.
         const images = await Promise.race([
           sceneImages(s, geometry).catch(() => null),
-          new Promise((resolve) => setTimeout(() => resolve(null), Number(process.env.S2_IMAGE_BUDGET_MS) || 6000)),
+          new Promise((resolve) => setTimeout(() => resolve(null), Number(env.S2_IMAGE_BUDGET_MS) || 6000)),
         ]);
         return { ...st, tried, candidates: scenes.length, images };
       }
