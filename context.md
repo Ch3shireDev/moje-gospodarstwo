@@ -10,15 +10,15 @@ Hackathon HackNation 2026 (Bydgoszcz, 21–22.11.2026), zadanie Krajowego Ośrod
 
 Pierwsza wersja prototypu powstała **przed publikacją pełnej treści zadania**, na zgadywanie. Część założeń okazała się błędna:
 
-| Wcześniej zakładaliśmy | Regulamin mówi |
-|---|---|
+| Wcześniej zakładaliśmy                      | Regulamin mówi                                                                                                                                                                                                               |
+|---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Odbiorca = rolnik z telefonem, mobile-first | Wymóg: działanie w przeglądarkach na **Windows** (Chrome, Firefox, Edge, Safari, Opera). Mobile to atut. Nasze założenie: **web first + pełna responsywność + PWA**, tak żeby rolnik mógł wszystko zrobić tylko na telefonie |
-| Punkt na mapie | **Numer działki ewidencyjnej** albo mapa. Jury wpisuje numer |
-| „Dziś” + 3 scenariusze demo | **Dowolna data** z ostatnich 10 lat, wskazana przez jury |
-| Gleba wybierana ręcznie, bez uprawy | **Wybór uprawy** obowiązkowy, gleba najlepiej z danych |
-| Bilans 14 dni | Ocena bieżąca **i historyczna podatność z 10 lat** |
-| Bez satelitów i bez GIS-u | Wymagane kategorie: meteo, **satelita**, gleba, **hydrologia**, przestrzenne (**działki, użytkowanie, ukształtowanie terenu**) |
-| Raport tylko na ekranie | **Zapis, PDF lub druk** |
+| Punkt na mapie                              | **Numer działki ewidencyjnej** albo mapa. Jury wpisuje numer                                                                                                                                                                 |
+| „Dziś” + 3 scenariusze demo                 | **Dowolna data** z ostatnich 10 lat, wskazana przez jury                                                                                                                                                                     |
+| Gleba wybierana ręcznie, bez uprawy         | **Wybór uprawy** obowiązkowy, gleba najlepiej z danych                                                                                                                                                                       |
+| Bilans 14 dni                               | Ocena bieżąca **i historyczna podatność z 10 lat**                                                                                                                                                                           |
+| Bez satelitów i bez GIS-u                   | Wymagane kategorie: meteo, **satelita**, gleba, **hydrologia**, przestrzenne (**działki, użytkowanie, ukształtowanie terenu**)                                                                                               |
+| Raport tylko na ekranie                     | **Zapis, PDF lub druk**                                                                                                                                                                                                      |
 
 Dobre trafienia, które zostają: retencja przed nawadnianiem, rekomendacje liczone regułami z danych (a nie gotowe teksty), jawne źródła, degradacja przy awarii źródła, prosty język i karty wiedzy.
 
@@ -43,14 +43,6 @@ Przy konflikcie zaleceń wygrywa wyższy poziom:
 1. **Nauka:** FAO-56, IUNG-PIB (System Monitoringu Suszy Rolniczej), KE – Natural Water Retention Measures, publikacje recenzowane, naukowcy (SGGW, ERCE PAN, UW, PAN).
 2. **Organizacje przyrodnicze:** Centrum Ochrony Mokradeł (bagna.pl), OTOP, Koalicja Ratujmy Rzeki, WWF, Nauka dla Przyrody, PTH, EEA / Climate-ADAPT.
 3. **Instytucje państwowe i doradztwo:** PGW Wody Polskie, CDR Brwinów / ODR, IMGW-PIB (w części zaleceń).
-
-Zasady:
-- **Wody Polskie są dozwolone** – jako źródło **danych** (Hydroportal ISOK, MPHP, rejestry) i jako organ, który wydaje zgody i przyjmuje zgłoszenia wodnoprawne (to fakt prawny, podajemy go wprost).
-- Ich **wytyczne** mają niższy priorytet niż wytyczne naukowców i ekologów. Organizacje przyrodnicze i Wody Polskie często się nie zgadzają, np. w sprawie pogłębiania i odmulania rowów, regulacji rzek albo budowy zbiorników zaporowych. Wtedy rekomendacją jest stanowisko naukowo-przyrodnicze. Stanowisko Wód Polskich można pokazać jako informację dodatkową, z zaznaczeniem, czyje jest.
-- **Lasy Państwowe nie są źródłem.** To decyzja właściciela projektu.
-- Treści są parafrazą, a nie cytatem. Każda liczba ma źródło. Liczby wyliczone przez nas są oznaczone jako „wyliczenie”.
-- Uczciwość ponad propagandę: np. karta o lasach mówi wprost, że przy ekstremalnych opadach las nie zapobiega powodzi.
-- Pełna lista źródeł: `docs/zrodla.md`.
 
 ## 4. Uruchomienie
 
@@ -84,24 +76,24 @@ Backend nadal **preferuje zero zależności npm**. Wyjątek dopuszczamy tylko wt
 
 ## 6. Pułapki w danych (sprawdzone na prawdziwych odpowiedziach)
 
-| Źródło | Pułapka | Jak obsłużone |
-|---|---|---|
-| Open-Meteo `soil_moisture_*` | W części prognozowej skacze o ~30% w 4 godziny, bo `best_match` przełącza modele | Bierzemy **tylko bieżącą godzinę**. Przyszłość liczymy z bilansu P − ET0 |
-| Open-Meteo archiwum (ERA5) | Inne warstwy gleby niż w prognozie, brak `precipitation_probability_max` | Osobna lista zmiennych w `openMeteo.js` |
-| Open-Meteo limity | Darmowe API: 10 000 zapytań/dobę na IP. Na hackathonie limit był wyczerpany przez wspólne IP | Archiwum rocznymi blokami z cache na dysku, zapas NASA POWER z ET0 liczonym przez nas |
-| Sentinel-2 Earth Search | STAC podaje offset −0,1, ale DN w COG są już bez przesunięcia (czerwień nad roślinnością ~400–800) | `effectiveOffset()`: offset tylko gdy wszystkie DN ≥ 1000 |
-| Sentinel-2 B11 | Kafel 20 m waży > 1 MB | B11 z podglądu 40 m, próbkowanie po współrzędnych |
-| ULDK GetParcelByIdOrNr | 1. linia to LICZBA wyników, nie status | `parseUldkList()` |
-| IUNG WMS | Raster: GRAY_INDEX 1–4 kategorie, 5 organiczne, 11 las, 12 woda, 13 zabudowa | `CLASSES` w `iungSoil.js` |
-| NMT GUGiK | `x` = północ, `y` = wschód (PUWG 1992) | `to2180()` zwraca obie konwencje |
-| Overpass | Z sieci hackathonu nie odpowiadał | Trzy serwery po kolei, potem jawny brak w raporcie |
-| IMGW `/synop` | Brak współrzędnych, liczby jako stringi, `null`, stacje górskie i „Platforma” na Bałtyku | Tabela `stations.js`, `num()`, flaga `skip` |
-| IMGW `/synop` `suma_opadu` | Nieznany okres akumulacji (nie doba) | Nie używamy opadu ze stacji |
-| IMGW `/synop`, `/warningsmeteo` | Tylko stan bieżący, **brak archiwum** | Dla dat historycznych raport mówi wprost: brak danych |
-| IMGW `/warningsmeteo` | Przypisane do 4-cyfrowych kodów TERYT powiatów, czas lokalny jako string | Kod powiatu z ULDK, porównanie stringów czasu warszawskiego |
-| ULDK | Odpowiada **tekstem**: linia 1 = status (`0` = OK), linia 2 = pola rozdzielone `\|` | `parseUldk()`. `306401_1` → powiat `3064` |
-| ULDK `xy` | Kolejność `lon,lat,4326` (sprawdzone) | — |
-| Sezon | W listopadzie ET0 ~0,5 mm/dzień, nawadnianie bez sensu | Silnik zna sezony. Jury może podać datę z sezonu wegetacyjnego |
+| Źródło                          | Pułapka                                                                                            | Jak obsłużone                                                                         |
+|---------------------------------|----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| Open-Meteo `soil_moisture_*`    | W części prognozowej skacze o ~30% w 4 godziny, bo `best_match` przełącza modele                   | Bierzemy **tylko bieżącą godzinę**. Przyszłość liczymy z bilansu P − ET0              |
+| Open-Meteo archiwum (ERA5)      | Inne warstwy gleby niż w prognozie, brak `precipitation_probability_max`                           | Osobna lista zmiennych w `openMeteo.js`                                               |
+| Open-Meteo limity               | Darmowe API: 10 000 zapytań/dobę na IP. Na hackathonie limit był wyczerpany przez wspólne IP       | Archiwum rocznymi blokami z cache na dysku, zapas NASA POWER z ET0 liczonym przez nas |
+| Sentinel-2 Earth Search         | STAC podaje offset −0,1, ale DN w COG są już bez przesunięcia (czerwień nad roślinnością ~400–800) | `effectiveOffset()`: offset tylko gdy wszystkie DN ≥ 1000                             |
+| Sentinel-2 B11                  | Kafel 20 m waży > 1 MB                                                                             | B11 z podglądu 40 m, próbkowanie po współrzędnych                                     |
+| ULDK GetParcelByIdOrNr          | 1. linia to LICZBA wyników, nie status                                                             | `parseUldkList()`                                                                     |
+| IUNG WMS                        | Raster: GRAY_INDEX 1–4 kategorie, 5 organiczne, 11 las, 12 woda, 13 zabudowa                       | `CLASSES` w `iungSoil.js`                                                             |
+| NMT GUGiK                       | `x` = północ, `y` = wschód (PUWG 1992)                                                             | `to2180()` zwraca obie konwencje                                                      |
+| Overpass                        | Z sieci hackathonu nie odpowiadał                                                                  | Trzy serwery po kolei, potem jawny brak w raporcie                                    |
+| IMGW `/synop`                   | Brak współrzędnych, liczby jako stringi, `null`, stacje górskie i „Platforma” na Bałtyku           | Tabela `stations.js`, `num()`, flaga `skip`                                           |
+| IMGW `/synop` `suma_opadu`      | Nieznany okres akumulacji (nie doba)                                                               | Nie używamy opadu ze stacji                                                           |
+| IMGW `/synop`, `/warningsmeteo` | Tylko stan bieżący, **brak archiwum**                                                              | Dla dat historycznych raport mówi wprost: brak danych                                 |
+| IMGW `/warningsmeteo`           | Przypisane do 4-cyfrowych kodów TERYT powiatów, czas lokalny jako string                           | Kod powiatu z ULDK, porównanie stringów czasu warszawskiego                           |
+| ULDK                            | Odpowiada **tekstem**: linia 1 = status (`0` = OK), linia 2 = pola rozdzielone `\|`                | `parseUldk()`. `306401_1` → powiat `3064`                                             |
+| ULDK `xy`                       | Kolejność `lon,lat,4326` (sprawdzone)                                                              | —                                                                                     |
+| Sezon                           | W listopadzie ET0 ~0,5 mm/dzień, nawadnianie bez sensu                                             | Silnik zna sezony. Jury może podać datę z sezonu wegetacyjnego                        |
 
 ## 7. Silnik reguł – obecne liczby
 
@@ -111,15 +103,7 @@ Backend nadal **preferuje zero zależności npm**. Wyjątek dopuszczamy tylko wt
 - Poza sezonem zawsze akcja retencyjna (zastawki, przegrody z materiałów naturalnych).
 - Progi są **orientacyjne**. Do zmiany na metodykę FAO-56 (Kc) i IUNG (klimatyczny bilans wodny, kategorie gleb) oraz do konsultacji z mentorami.
 
-## 8. Czego NIE zweryfikowano
-
-- Pełny build Vite + `npm install` oraz `docker compose up`.
-- Prawdziwe zapytania z backendu (fixtury pochodzą z ręcznych zapytań w Postmanie).
-- ULDK `GetParcelByXY&srid=4326`, `GetParcelById`, nazwy warstw WMS GUGiK (`Raster`, `dzialki,numery_dzialek`).
-- Działanie i wygląd na desktopie we wszystkich 5 przeglądarkach z regulaminu.
-- Czas odpowiedzi przy pobieraniu 10 lat archiwum.
-
-## 9. Kolejność prac (stan na 21.11.2026)
+## 8. Kolejność prac (stan na 21.11.2026)
 
 Zrobione: punkty 1–8 z poprzedniej listy (działka po numerze, data, uprawa, 10 lat, przyczyny, niepewność, druk, satelita, teren, hydrologia, gleba IUNG). Do zrobienia:
 
@@ -128,7 +112,7 @@ Zrobione: punkty 1–8 z poprzedniej listy (działka po numerze, data, uprawa, 1
 3. BDOT10k jako pewniejsze źródło rowów niż OSM.
 4. Materiały do zgłoszenia: prezentacja PDF (≤ 10 slajdów), film (≤ 3 min), przykładowe raporty (PDF).
 
-## 10. Konwencje
+## 9. Konwencje
 
 - UI i komunikaty po polsku, prosto, bez żargonu. Zwracamy się do rolnika na „ty”.
 - Każda nowa reguła = test w `server/test/engine.test.js`. Każde nowe źródło = fixtura z prawdziwej odpowiedzi w `server/test/fixtures/` + wpis w `docs/api.md`.

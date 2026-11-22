@@ -10,6 +10,10 @@ const BASE = 'https://danepubliczne.imgw.pl/api/data';
 export const ATTRIBUTION = { name: 'IMGW-PIB', url: 'https://danepubliczne.imgw.pl/', licence: 'Źródłem pochodzenia danych jest IMGW-PIB (dane przetworzone)' };
 
 export const getSynop = () => cachedFetch(`${BASE}/synop`, { ttlMs: 10 * 60_000 });
+// Gdy nie ma ostrzeżeń, IMGW zamiast pustej tablicy zwraca obiekt {"message": "Brak ostrzeżeń …"}
+// (fixtura imgw-warningsmeteo-brak.json). Wszystko, co nie jest tablicą, traktujemy jak brak danych.
+const asList = (x) => (Array.isArray(x) ? x : []);
+
 export const getWarnings = () => cachedFetch(`${BASE}/warningsmeteo`, { ttlMs: 5 * 60_000 });
 export const getHydro = () => cachedFetch(`${BASE}/hydro`, { ttlMs: 15 * 60_000, timeoutMs: 12000 });
 export const getHydroWarnings = () => cachedFetch(`${BASE}/warningshydro`, { ttlMs: 15 * 60_000, timeoutMs: 12000 });
@@ -20,7 +24,7 @@ const num = (v) => (v === null || v === undefined || v === '' ? null : Number(v)
 /** Najbliższa stacja synoptyczna (z pominięciem gór i platformy na Bałtyku). */
 export function nearestStation(synop, lat, lon) {
   let best = null;
-  for (const row of synop ?? []) {
+  for (const row of asList(synop)) {
     const st = STATIONS[row.id_stacji];
     if (!st || st.skip) continue;
     const dist = distanceKm(lat, lon, st.lat, st.lon);
@@ -43,7 +47,7 @@ export function nearestStation(synop, lat, lon) {
 /** Najbliższy wodowskaz IMGW (API hydro podaje współrzędne) – stan wody względem stanów ostrzegawczego i alarmowego. */
 export function nearestHydroStation(hydro, lat, lon) {
   let best = null;
-  for (const row of hydro ?? []) {
+  for (const row of asList(hydro)) {
     const la = num(row.lat);
     const lo = num(row.lon);
     if (la == null || lo == null || num(row.stan_wody) == null) continue;
@@ -70,7 +74,7 @@ export function nearestHydroStation(hydro, lat, lon) {
 export function hydroWarningsFor(warnings, voivodeship, nowStr = warsawNowString()) {
   if (!voivodeship) return [];
   const v = voivodeship.toLowerCase();
-  return (warnings ?? [])
+  return asList(warnings)
     .filter((w) => !w.data_do || w.data_do > nowStr)
     .map((w) => ({ w, areas: (w.obszary ?? []).filter((o) => (o.wojewodztwo ?? '').toLowerCase() === v) }))
     .filter(({ areas }) => areas.length)
@@ -107,7 +111,7 @@ export function warsawNowString(now = new Date()) {
 export function warningsForCounty(warnings, countyCode, now = new Date()) {
   if (!countyCode) return [];
   const nowStr = warsawNowString(now);
-  return (warnings ?? [])
+  return asList(warnings)
     .filter((w) => Array.isArray(w.teryt) && w.teryt.includes(countyCode))
     .filter((w) => !w.obowiazuje_do || w.obowiazuje_do > nowStr)
     .map((w) => ({

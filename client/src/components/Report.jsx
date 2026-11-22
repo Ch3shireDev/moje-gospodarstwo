@@ -5,6 +5,7 @@ import Knowledge from './Knowledge.jsx';
 import { KNOWLEDGE } from '../knowledge.js';
 import { fmtDate, fmtDateTime, n, signed } from '../format.js';
 import { downloadIcs } from '../calendar.js';
+import { importFresh } from '../lazy.js';
 
 // Raport dla rolnika: najpierw proste odpowiedzi (jak jest, dlaczego, co zrobić),
 // a liczby, metodyka i źródła są zwinięte w "Szczegóły" – dla doradcy i dociekliwych.
@@ -165,12 +166,12 @@ export default function Report({ report, onSave, onBack }) {
   async function downloadPdf() {
     setPdfState('busy');
     try {
-      const { downloadReportPdf } = await import('../pdf/reportPdf.js');
+      const { downloadReportPdf } = await importFresh(() => import('../pdf/reportPdf.js'));
       await downloadReportPdf(report);
       setPdfState(null);
     } catch (err) {
       console.error(err);
-      setPdfState(`Nie udało się utworzyć PDF: ${err.message ?? err}`);
+      setPdfState(err.reloading || err.name === 'NetworkError' ? err.message : `Nie udało się utworzyć PDF: ${err.message ?? err}`);
     }
   }
   const { place, status, metrics, history, vulnerability: v, rootZone, causes, recommendations: rec, uncertainty, soil, crop, satellite, terrain, waters } = report;

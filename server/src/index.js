@@ -32,19 +32,32 @@ function sendJson(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
+/**
+ * Pliki frontu. Pliki z /assets/ mają hash w nazwie – po wdrożeniu nowej wersji stare znikają.
+ * Dla nich NIE ma przekierowania na index.html (SPA fallback): przeglądarka dostałaby HTML zamiast
+ * skryptu i zgłosiła „error loading dynamically imported module”. Zwracamy 404, a front odświeża stronę.
+ */
 async function serveStatic(res, urlPath) {
   const safe = path.normalize(decodeURIComponent(urlPath)).replace(/^([/\\])+/, '');
   let file = path.join(DIST, safe);
   if (!file.startsWith(DIST)) return sendJson(res, 403, { error: 'Nie.' });
+  const isAsset = safe.startsWith('assets/') || safe.startsWith('assets\\');
   try {
     const s = await stat(file);
     if (s.isDirectory()) file = path.join(file, 'index.html');
   } catch {
-    file = path.join(DIST, 'index.html'); // SPA fallback
+    if (isAsset || path.extname(safe)) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' });
+      return res.end('Nie ma takiego pliku (możliwe, że wgrano nową wersję aplikacji – odśwież stronę).');
+    }
+    file = path.join(DIST, 'index.html'); // SPA fallback tylko dla adresów stron (/mapa, /raport…)
   }
   try {
     const data = await readFile(file);
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] ?? 'application/octet-stream' });
+    const name = path.basename(file);
+    // Pliki z hashem można trzymać w cache długo; index.html, sw.js i manifest – zawsze świeże.
+    const cache = isAsset ? 'public, max-age=31536000, immutable' : 'no-cache';
+    res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] ?? 'application/octet-stream', 'Cache-Control': name === 'index.html' || name === 'sw.js' ? 'no-cache' : cache });
     res.end(data);
   } catch {
     sendJson(res, 404, { error: 'Brak zbudowanego frontu. Uruchom `npm run build` albo korzystaj z `npm run dev` w client/.' });

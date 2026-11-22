@@ -1,7 +1,8 @@
 // Baza wiedzy "dlaczego to działa". Treści są parafrazą źródeł przyrodniczych i naukowych
-// (Centrum Ochrony Mokradeł / bagna.pl, OTOP, Koalicja Ratujmy Rzeki, WWF, naukowcy SGGW i PAN, EEA).
+// (Centrum Ochrony Mokradeł / bagna.pl, OTOP, Koalicja Ratujmy Rzeki, WWF, PAN, EEA, IMGW-PIB). Bez portali
+// publicystycznych – tylko publikacje naukowe, raporty instytucji naukowych i organizacji przyrodniczych.
 // Hierarchia: nauka > organizacje przyrodnicze > instytucje państwowe (docs/zrodla.md).
-// Wody Polskie: dane i formalności tak, ale przy konflikcie zaleceń wygrywają przyrodnicy. Bez Lasów Państwowych.
+// Wody Polskie i Lasy Państwowe: można przywoływać, ale przy konflikcie zaleceń wygrywają naukowcy i przyrodnicy.
 // Liczby oznaczone "wyliczenie" policzyliśmy sami z danych źródłowych – reszta jest ze źródeł.
 
 export const KNOWLEDGE = [
@@ -19,12 +20,12 @@ export const KNOWLEDGE = [
     ],
     numbers: [
       { value: '15–85 cm', label: 'wzrost poziomu wód gruntowych przy zastawkach (badanie terenowe)' },
-      { value: '~1,6 tys. m³', label: 'zasoby wód powierzchniowych na mieszkańca Polski rocznie; średnia europejska to ok. 4,6 tys. m³' },
+      { value: '~1,6 tys. m³', label: 'własne zasoby wodne na mieszkańca Polski rocznie – w UE mniej mają tylko Czechy, Cypr i Malta' },
     ],
     sources: [
       { title: 'Badanie efektów piętrzenia wody zastawkami (PECO, 2013)', url: 'https://yadda.icm.edu.pl/baztech/element/bwmeta1.element.baztech-f7d43bd6-b5e5-49d9-af06-5d4c74c57277/c/PECO_2013_2_p1-24.pdf' },
       { title: 'OTOP: Rolniku, rolniczko – zatrzymaj wodę w rowie', url: 'https://otop.org.pl/wp-content/uploads/2026/08/otop_broszura_rolniku_rolniczko_net_pojed_Str.pdf' },
-      { title: 'Nauka w Polsce: zasoby wodne Polski na tle Europy (IOŚ-PIB)', url: 'https://scienceinpoland.pap.pl/node/83283' },
+      { title: 'Gutry-Korycka, Sadurski, Kundzewicz i in. (2014): Zasoby wodne a ich wykorzystanie, „Nauka” (PAN) 1/2014', url: 'https://czasopisma.pan.pl/Content/92153' },
     ],
   },
   {
@@ -49,28 +50,27 @@ export const KNOWLEDGE = [
       { title: 'W. Kotowski (Centrum Ochrony Mokradeł, UW): Ponowne nawodnienie torfowisk rolniczych', url: 'https://bagna.pl/images/aktualnosci/warsaw-climate-talks-2025/Kotowski_WarsawClimateTalks.pdf' },
       { title: 'bagna.pl: Oszacowanie emisji gazów cieplarnianych z torfowisk w Polsce', url: 'https://bagna.pl/images/klimat/Oszacowanie_emisji_gazow_cieplarnianych_z_uzytkowania_torfowisk_w_Polsce.pdf' },
       { title: 'Koalicja Ratujmy Rzeki / bagna.pl: Woda w ekosystemach bagiennych', url: 'https://ratujmyrzeki.bagna.pl/images/Wplyw_ekosystemy_bagienne.pdf' },
-      { title: 'OKO.press: Czas mokradeł – na osuszaniu tracimy', url: 'https://oko.press/czas-mokradel-nauczmy-sie-je-ratowac-bo-na-osuszaniu-tracimy' },
     ],
   },
   {
     id: 'rzeki',
     title: 'Wyprostowana rzeka osusza okolicę',
     lead:
-      'Przez dekady rzeki skracano i prostowano, żeby szybciej odprowadzały wodę. Efekt: woda ucieka szybciej, a pola w dolinie tracą wilgoć.',
+      'Przez dekady rzeki skracano, prostowano i obwałowywano, żeby szybciej odprowadzały wodę. Efekt: woda szybciej ucieka, a dolina traci naturalne miejsca, w których mogłaby wsiąknąć.',
     points: [
-      'Uregulowane koryto szybciej się pogłębia (eroduje). Obniża się dno rzeki, a za nim poziom wód gruntowych w całej dolinie.',
-      'Rzeka odcięta od terenów zalewowych przestaje wymieniać się wodą z gruntem i działa jak wielki rów drenujący.',
-      'Regulacja odcina też mokradła w dolinie, które dawniej napełniały się przy każdym wezbraniu i oddawały wodę powoli.',
-      'Największe powodzie ostatnich lat zdarzały się na rzekach uregulowanych i obwałowanych. Zbiorniki zaporowe podnoszą wody gruntowe tylko lokalnie, a poniżej tamy rzeka się wcina i dolina przesycha.',
-      'Zamiast tego naukowcy i organizacje przyrodnicze postulują renaturyzację: przywracanie meandrów, polderów zalewowych i zalewanych łąk.',
-      'Płytkie wody gruntowe odnawiają się w tygodnie i miesiące, głębsze warstwy – przez dziesiątki, a nawet setki lat. Tego, co wypuścimy rowem, szybko nie odzyskamy.',
+      'Europejska Agencja Środowiska ocenia, że 70–90% terenów zalewowych w Europie jest zdegradowanych – m.in. przez prostowanie rzek, wały i odcięcie mokradeł w dolinach.',
+      'Rzeka odcięta wałami od doliny traci możliwość naturalnego zatrzymywania wezbranej wody. Mokradła, które dawniej napełniały się przy każdym wezbraniu i oddawały wodę powoli, wysychają.',
+      'Zespół Komitetu Nauk o Wodzie PAN po powodzi 2024 r. wymienia nieprzemyślaną regulację rzek wśród przyczyn powodzi: przenosi ona zagrożenie niżej w dół rzeki.',
+      'Ten sam zespół zaleca spowalnianie odpływu: renaturyzację rzek, „odwróconą meliorację” (rowy, które zatrzymują wodę), poldery i rolnicze praktyki zwiększające retencję gleby. W wielu krajach UE zapory, prostowanie i wały osiągnęły już granicę skuteczności.',
+      'Zbiorniki zaporowe podnoszą wody gruntowe tylko w swoim pobliżu – WWF Polska wskazuje, że nie są dobrym narzędziem w walce z suszą.',
+      'Głębokie wody podziemne odnawiają się bardzo powoli, dlatego hydrolodzy postulują je chronić. Tego, co szybko wypuścimy rowem i rzeką, szybko nie odzyskamy.',
     ],
-    numbers: [],
+    numbers: [{ value: '70–90%', label: 'terenów zalewowych w Europie jest zdegradowanych (EEA)' }],
     sources: [
-      { title: 'PAP: prof. Mateusz Grygoruk (SGGW) o renaturyzacji rzek', url: 'https://www.pap.pl/aktualnosci/hydrolog-renaturyzacja-rzek-dzialanie-niezbedne-nie-tylko-dla-srodowiska-ale-i-dla' },
-      { title: 'Warto wiedzieć: dr Kinga Krauze (ERCE PAN) – czy renaturyzacja rzek pomoże', url: 'https://wartowiedziec.pl/zarzadzanie-przestrzenia/81406-czy-renaturyzacja-rzek-pomoze-wygrac-walke-z-susza-i-powodziami' },
+      { title: 'Europejska Agencja Środowiska (2019): Floodplains – a natural system to preserve and restore, raport EEA 24/2019', url: 'https://www.eea.europa.eu/en/analysis/publications/floodplains-a-natural-system-to-preserve-and-restore' },
+      { title: 'Zespół ds. Odbudowy Odporności po Powodzi KNoWiGW PAN (2025): raport po powodzi 2024, „Nauka” 4/2025', url: 'https://nauka-pan.pl/index.php/nauka/article/download/1145/1192/1552' },
       { title: 'WWF Polska: dlaczego zbiorniki zaporowe nie pomagają w walce z suszą', url: 'https://www.wwf.pl/sites/default/files/inline-files/dlaczego%20zbiorniki%20zaporowe%20nie%20s%C4%85%20dobrym%20narz%C4%99dziem%20w%20walce%20z%20susz%C4%85.pdf' },
-      { title: 'OKO.press: wciąż reguluje się rzeki (cyt. Koalicja Ratujmy Rzeki)', url: 'https://oko.press/w-polsce-wciaz-reguluje-sie-rzeki-ze-szkoda-dla-przyrody-i-bezpieczenstwa' },
+      { title: 'Gutry-Korycka, Sadurski, Kundzewicz i in. (2014): Zasoby wodne a ich wykorzystanie, „Nauka” (PAN) 1/2014', url: 'https://czasopisma.pan.pl/Content/92153' },
     ],
   },
   {
@@ -80,17 +80,16 @@ export const KNOWLEDGE = [
       'Las zatrzymuje wodę w koronach drzew, ściółce, martwym drewnie i glebie. Spowalnia spływ i wyrównuje przepływy w rzekach. Nie jest jednak tamą na każdą ulewę.',
     points: [
       'Europejska Agencja Środowiska wskazuje, że lasy zatrzymują nadmiar deszczu, ograniczają gwałtowny spływ i szkody powodziowe, a w suszy łagodzą niedobory. Efekt zależy od powierzchni lasu, składu gatunkowego i intensywności gospodarki.',
-      'Zwalone pnie w poprzek stoku, wykroty, śródleśne bagienka i zatkane rowy wyglądają na bałagan, ale w skali zlewni wyraźnie spowalniają spływ.',
       'Naukowcy z Nauki dla Przyrody i Polskiego Towarzystwa Hydrobiologicznego postulują, by w obszarach źródliskowych, zwłaszcza w górach, gospodarkę leśną podporządkować retencji wody, a nie pozyskaniu drewna.',
-      'Uczciwie: przy opadach ekstremalnych (we wrześniu 2024 r. ponad 400 mm w 3–4 dni w Kotlinie Kłodzkiej) las nie zapobiegnie powodzi – tak oceniła grupa 16 naukowców, w tym hydrologów i klimatologów. Do tego po suszy przesuszona ściółka chłonie mniej wody. Las pomaga przy typowych ulewach, przy katastrofie jego wpływ jest niewielki.',
+      'Uczciwie: las nie jest tamą na każdą ulewę. We wrześniu 2024 r. na Śnieżniku spadło 218,8 mm deszczu w jedną dobę, a sumy z kilku dni kilkakrotnie przekroczyły miesięczną normę (IMGW-PIB). Przy takich opadach liczy się suma wielu działań w całej zlewni – zespół Komitetu Nauk o Wodzie PAN zaleca jednocześnie chronić lasy i mokradła, zwiększać retencję gleby praktykami rolniczymi i renaturyzować rzeki.',
       'Dla rolnika wniosek jest praktyczny: zadrzewienia śródpolne, miedze i pasy krzewów działają jak mini-las. Spowalniają spływ z pola, chronią przed erozją i wiatrem, który wysusza glebę.',
     ],
     numbers: [],
     sources: [
       { title: 'EEA / Climate-ADAPT: Water retention potential of Europe’s forests', url: 'https://climate-adapt.eea.europa.eu/pl/metadata/publications/water-retention-potential-of-europes-forests' },
-      { title: 'Nauka w Polsce: list PTH i Nauki dla Przyrody w sprawie suszy', url: 'https://polishscience.pl/en/?p=129622' },
-      { title: 'Spider’s Web: przyczyny powodzi 2024 okiem naukowców (m.in. dr A. Jermaczek)', url: 'https://spidersweb.pl/2024/09/powodz-przyczyny-zdanie-naukowcow.html' },
-      { title: 'Radio Kraków: stanowisko 16 naukowców o lasach i powodzi', url: 'https://www.radiokrakow.pl/audycje/zarzadzanie-lasami-a-powodz-list-naukowcow/' },
+      { title: 'Polish Science (PAP): list Polskiego Towarzystwa Hydrobiologicznego i Nauki dla Przyrody w sprawie suszy', url: 'https://polishscience.pl/en/?p=129622' },
+      { title: 'IMGW-PIB: Biuletyn Państwowej Służby Hydrologiczno-Meteorologicznej, wrzesień 2024', url: 'https://dane.imgw.pl/data/dane_pomiarowo_obserwacyjne/Biuletyn_PSHM/Biuletyn_PSHM_2024_09_(wrzesien).pdf' },
+      { title: 'Zespół ds. Odbudowy Odporności po Powodzi KNoWiGW PAN (2025): raport po powodzi 2024, „Nauka” 4/2025', url: 'https://nauka-pan.pl/index.php/nauka/article/download/1145/1192/1552' },
     ],
   },
   {

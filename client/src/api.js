@@ -19,12 +19,60 @@ export class ChoiceError extends Error {
   }
 }
 
-async function getJson(url, signal) {
-  const res = await fetch(url, { signal });
-  const body = await res.json().catch(() => ({}));
-  if (res.status === 300) throw new ChoiceError(body.error, body.candidates ?? []);
-  if (!res.ok) throw new Error(body.error || `Serwer odpowiedział błędem ${res.status}`);
-  return body;
+/** Brak sieci, zerwane połączenie albo przekroczony czas – komunikat dla rolnika, bez technicznych szczegółów. */
+export class NetworkError extends Error {
+  constructor(detail) {
+    super('Brak połączenia z siecią. Proszę spróbować później.');
+    this.name = 'NetworkError';
+    this.detail = detail;
+  }
+}
+
+const offline = () => typeof navigator !== 'undefined' && navigator.onLine === false;
+
+/**
+ * GET z limitem czasu. Anulowanie przez użytkownika (signal) zostaje AbortError – aplikacja je pomija.
+ * Limit czasu, brak sieci i zerwane połączenie dają NetworkError z prostym komunikatem.
+ * Bez AbortSignal.any/timeout – starsze Safari ich nie mają.
+ */
+async function getJson(url, signal, { timeoutMs = 20_000 } = {}) {
+  if (offline()) throw new NetworkError('offline');
+  const ctrl = new AbortController();
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    ctrl.abort();
+  }, timeoutMs);
+  const onAbort = () => ctrl.abort();
+  if (signal?.aborted) ctrl.abort();
+  signal?.addEventListener('abort', onAbort, { once: true });
+  try {
+    let res;
+    try {
+      res = await fetch(url, { signal: ctrl.signal });
+    } catch (e) {
+      if (timedOut) throw new NetworkError('timeout');
+      if (e.name === 'AbortError') throw e;
+      throw new NetworkError(e.message); // np. TypeError: Failed to fetch / NetworkError when attempting…
+    }
+    let body;
+    try {
+      body = await res.json();
+    } catch (e) {
+      if (timedOut) throw new NetworkError('timeout');
+      if (e.name === 'AbortError') throw e;
+      body = null;
+    }
+    // Brama (Caddy) bez działającego serwera albo zerwane połączenie w trakcie: 502/503/504 bez naszego JSON-a.
+    if (!body && [502, 503, 504].includes(res.status)) throw new NetworkError(`HTTP ${res.status}`);
+    body ??= {};
+    if (res.status === 300) throw new ChoiceError(body.error, body.candidates ?? []);
+    if (!res.ok) throw new Error(body.error || `Serwer odpowiedział błędem ${res.status}. Proszę spróbować później.`);
+    return body;
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', onAbort);
+  }
 }
 
 /** q: { parcel } albo { lat, lon }, plus date, crop, soil */
@@ -38,7 +86,7 @@ export function fetchReport(q, signal) {
   if (q.date) params.set('date', q.date);
   if (q.crop) params.set('crop', q.crop);
   if (q.soil && q.soil !== 'auto') params.set('soil', q.soil);
-  return getJson(`/api/report?${params}`, signal);
+  return getJson(`/api/report?${params}`, signal, { timeoutMs: 90_000 });
 }
 
 export const fetchMeta = (signal) => getJson('/api/meta', signal);

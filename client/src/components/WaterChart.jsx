@@ -19,39 +19,52 @@ export default function WaterChart({ days, today }) {
   const rainSum = days.filter((d) => d.date <= today).reduce((a, d) => a + (d.rain ?? 0), 0);
   const label = `Wykres opadu i parowania. Opad do daty analizy: ${n(rainSum)} mm.`;
 
+  // Słupki rysujemy w SVG rozciąganym na całą szerokość (preserveAspectRatio="none"), a napisy
+  // jako zwykły HTML nad wykresem – inaczej tekst rozciągałby się razem ze słupkami.
+  const pct = (x) => `${(x / W) * 100}%`;
+  const todayX = todayIdx >= 0 ? padX + slot * todayIdx : null;
+  const ticks = days
+    .map((d, i) => ({ d, i }))
+    .filter(({ i }) => i === 0 || i === todayIdx || i === days.length - 1);
+
   return (
     <figure className="chart">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label} preserveAspectRatio="none">
-        {days.map((d, i) => {
-          const future = d.date > today;
-          const rh = (d.rain ?? 0) * k;
-          const eh = (d.et0 ?? 0) * k;
-          return (
-            <g key={d.date} opacity={future ? 0.55 : 1}>
-              <rect x={xOf(i)} y={mid - rh} width={bw} height={Math.max(rh, 0)} rx="1.5" className="bar-rain">
-                <title>{`${fmtDayMonth(d.date)}: opad ${n(d.rain)} mm`}</title>
-              </rect>
-              <rect x={xOf(i)} y={mid} width={bw} height={Math.max(eh, 0)} rx="1.5" className="bar-et0">
-                <title>{`${fmtDayMonth(d.date)}: parowanie ${n(d.et0)} mm`}</title>
-              </rect>
-            </g>
-          );
-        })}
-        <line x1="0" x2={W} y1={mid} y2={mid} className="axis" />
-        {todayIdx >= 0 && (
-          <>
-            <line x1={padX + slot * todayIdx} x2={padX + slot * todayIdx} y1="4" y2={H - 18} className="today" />
-            <text x={padX + slot * todayIdx + 4} y="12" className="today-label">po dacie →</text>
-          </>
+      <div className="chart-plot">
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label} preserveAspectRatio="none">
+          {days.map((d, i) => {
+            const future = d.date > today;
+            const rh = (d.rain ?? 0) * k;
+            const eh = (d.et0 ?? 0) * k;
+            return (
+              <g key={d.date} opacity={future ? 0.55 : 1}>
+                <rect x={xOf(i)} y={mid - rh} width={bw} height={Math.max(rh, 0)} className="bar-rain">
+                  <title>{`${fmtDayMonth(d.date)}: opad ${n(d.rain)} mm`}</title>
+                </rect>
+                <rect x={xOf(i)} y={mid} width={bw} height={Math.max(eh, 0)} className="bar-et0">
+                  <title>{`${fmtDayMonth(d.date)}: parowanie ${n(d.et0)} mm`}</title>
+                </rect>
+              </g>
+            );
+          })}
+          <line x1="0" x2={W} y1={mid} y2={mid} className="axis" vectorEffect="non-scaling-stroke" />
+          {todayX != null && <line x1={todayX} x2={todayX} y1="4" y2={H - 18} className="today" vectorEffect="non-scaling-stroke" />}
+        </svg>
+        {todayX != null && (
+          <span className="chart-label today-label" style={{ left: pct(todayX), top: 0 }} aria-hidden="true">
+            po dacie →
+          </span>
         )}
-        {days.map((d, i) =>
-          i === 0 || i === todayIdx || i === days.length - 1 ? (
-            <text key={d.date} x={xOf(i) + bw / 2} y={H - 4} className="tick" textAnchor={i === 0 ? 'start' : i === days.length - 1 ? 'end' : 'middle'}>
-              {i === todayIdx ? "analiza" : fmtDayMonth(d.date)}
-            </text>
-          ) : null,
-        )}
-      </svg>
+        {ticks.map(({ d, i }) => (
+          <span
+            key={d.date}
+            className={`chart-label tick${i === 0 ? ' at-start' : i === days.length - 1 ? ' at-end' : ''}`}
+            style={i === 0 ? { left: 0 } : i === days.length - 1 ? { right: 0 } : { left: pct(xOf(i) + bw / 2) }}
+            aria-hidden="true"
+          >
+            {i === todayIdx ? 'analiza' : fmtDayMonth(d.date)}
+          </span>
+        ))}
+      </div>
       <figcaption className="legend">
         <span><i className="sw rain" /> opad [mm]</span>
         <span><i className="sw et0" /> parowanie ET0 [mm]</span>

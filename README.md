@@ -12,7 +12,7 @@ Otwarte dane o pogodzie, glebie, satelitach i wodzie są rozproszone i trudne w 
 - [docs/jak-to-dziala.md](docs/jak-to-dziala.md) – co dzieje się w aplikacji od kliknięcia do raportu,
 - [docs/status.md](docs/status.md) – co już zrobiliśmy i jaki jest cel projektu,
 - [docs/domena.md](docs/domena.md) – domena problemu po ludzku: bilans wodny, susza rolnicza, progi IUNG, retencja, satelita, słowniczek,
-- [docs/prezentacja.md](docs/prezentacja.md) – prezentacja (10 slajdów, [Marp](https://marp.app/)). PDF do zgłoszenia:
+- [docs/prezentacja.md](docs/prezentacja.md) – prezentacja (10 slajdów, [Marp](https://marp.app/)): przypadki użycia od rolnika po przyrodnika; pełny tekst wystąpienia jest w komentarzach `<!-- -->` (notatki prelegenta, nie drukują się). PDF do zgłoszenia:
 
 ```bash
 npx @marp-team/marp-cli docs/prezentacja.md --pdf --html --allow-local-files

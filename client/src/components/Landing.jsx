@@ -25,9 +25,9 @@ export default function Landing({ examples = [], lastReport, onSearch, onStart, 
             enterKeyHint="search"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Region lub numer działki"
+            placeholder="Region, miasto lub numer działki"
             aria-describedby="landing-search-hint"
-            aria-label="Region lub numer działki"
+            aria-label="Region, miasto lub numer działki"
             autoComplete="off"
             spellCheck="false"
           />

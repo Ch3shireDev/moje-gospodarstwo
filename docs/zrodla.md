@@ -25,29 +25,34 @@ Treści w aplikacji są parafrazą, a nie cytatem. Każda liczba ma źródło.
 - POLSA (2024) – Dane satelitarne dla administracji publicznej, rozdz. 6.3.3 i 6.3.4. https://polsa.gov.pl/aktywnosci/obserwacja-ziemi/dane-satelitarne/
 - CDR Brwinów (2025) – Melioracje, retencja i gospodarka wodna w rolnictwie (e-poradnik). https://woda.cdr.gov.pl/images/publikacje/Publikacje/Melioracje_retencja_wodna_e-poradnik_2025.pdf
 
+## Spór o mokradła – kontekst do prezentacji
+
+- PAP / Nauka w Polsce (06.03.2026), „Centrum Ochrony Mokradeł: ochrona mokradeł przynosi korzyści rolnikom i lokalnym mieszkańcom”. https://naukawpolsce.pl/aktualnosci/news%2C111990%2Ccentrum-ochrony-mokradel-ochrona-mokradel-przynosi-korzysci-rolnikom-i – projekt strategii ochrony mokradeł (konsultacje do 23.02.2026), obawy części rolników (wywłaszczenia, bezpieczeństwo żywnościowe, gospodarstwa mleczne na Podlasiu), odpowiedź przyrodników: zatrzymywać wodę tam, gdzie spadła; dobrowolne dopłaty m.in. za odtwarzanie zastawek na rowach. Przeczytane 21.11.2026. Organizacja przyrodnicza – w hierarchii źródeł poziom 2.
+- TVP Kielce, „Mokradła sposobem na suszę? Rząd chce zatrzymywać wodę, rolnicy protestują”. https://kielce.tvp.pl/94932117/susza-w-polsce-rzad-chce-odtwarzac-mokradla-i-magazynowac-wode – potwierdzony tylko tytuł (treść nie dała się pobrać 21.11.2026); nie cytujemy.
+
 ## Zastawki i rowy melioracyjne
 
 - OTOP BirdLife Polska – poradnik „Rolniku, rolniczko” o zatrzymywaniu wody w rowach: metody (przegrody z materiałów naturalnych, prefabrykaty, zastawki regulowane), formalności (Prawo wodne art. 395/395A, zgoda sąsiadów, RDOŚ), ryzyka. https://otop.org.pl/wp-content/uploads/2026/08/otop_broszura_rolniku_rolniczko_net_pojed_Str.pdf
 - Badanie piętrzenia wody dębowymi zastawkami – wzrost poziomu wód gruntowych o 15–85 cm (PECO 2013). https://yadda.icm.edu.pl/baztech/element/bwmeta1.element.baztech-f7d43bd6-b5e5-49d9-af06-5d4c74c57277/c/PECO_2013_2_p1-24.pdf
-- Zasoby wód powierzchniowych Polski ~1,6 tys. m³/os./rok wobec ~4,56 tys. średnio w Europie (IOŚ-PIB, projekt Klimada 2.0). https://scienceinpoland.pap.pl/node/83283
+- Gutry-Korycka M., Sadurski A., Kundzewicz Z. W., Pociask-Karteczka J., Skrzypczyk L. (2014), Zasoby wodne a ich wykorzystanie, „Nauka” 1/2014, s. 77–98 (PAN): własne zasoby wodne na mieszkańca 1590 m³/rok, całkowite 1839,3 m³/rok (1946–2011); wg Eurostatu za Polską w UE tylko Czechy, Cypr i Malta; powolna odnawialność głębokich wód podziemnych; rolnictwo i leśnictwo to ok. 11% poboru wody w Polsce (energetyka 69%). https://czasopisma.pan.pl/Content/92153 – przeczytane 21.11.2026.
 
 ## Torfowiska i zasypywanie rowów
 
 - W. Kotowski, Centrum Ochrony Mokradeł (UW): 1,3 mln ha osuszonych torfowisk, ~35 mln t ekw. CO₂/rok, ~4000 m³/ha utraconej retencji, koszt do 12 tys. zł/ha/rok (za Grygoruk i in. 2013), rekomendacje (odtwarzanie zastawek, bez pogłębiania rowów, paludikultura). https://bagna.pl/images/aktualnosci/warsaw-climate-talks-2025/Kotowski_WarsawClimateTalks.pdf
 - bagna.pl – oszacowanie emisji z torfowisk; ponowne nawodnienie przez zatrzymanie odpływu rowami: ~21,7 Mt ekw. CO₂ mniej. https://bagna.pl/images/klimat/Oszacowanie_emisji_gazow_cieplarnianych_z_uzytkowania_torfowisk_w_Polsce.pdf
 - Koalicja Ratujmy Rzeki / bagna.pl – torf to 90–95% wody, mursz 20–50%, mineralizacja i osiadanie są nieodwracalne. https://ratujmyrzeki.bagna.pl/images/Wplyw_ekosystemy_bagienne.pdf
-- OKO.press – odtwarzanie torfowisk: zasypywanie rowów lub zastawki. https://oko.press/czas-mokradel-nauczmy-sie-je-ratowac-bo-na-osuszaniu-tracimy
 
 ## Regulacja rzek
 
-- PAP – prof. Mateusz Grygoruk (SGGW): uregulowane rzeki szybciej erodują, obniżają się dno i wody gruntowe. https://www.pap.pl/aktualnosci/hydrolog-renaturyzacja-rzek-dzialanie-niezbedne-nie-tylko-dla-srodowiska-ale-i-dla
-- Warto Wiedzieć – dr Kinga Krauze (ERCE PAN): rzeka odcięta od wód gruntowych działa jak rów drenujący; czas odnawiania wód gruntowych. https://wartowiedziec.pl/zarzadzanie-przestrzenia/81406-czy-renaturyzacja-rzek-pomoze-wygrac-walke-z-susza-i-powodziami
+- Europejska Agencja Środowiska (2019), Floodplains: a natural system to preserve and restore, EEA Report 24/2019: 70–90% terenów zalewowych w Europie zdegradowanych (strona raportu, przeczytana 21.11.2026: https://www.eea.europa.eu/en/analysis/publications/floodplains-a-natural-system-to-preserve-and-restore). Przyczyny – wały, prostowanie rzek, odcięcie mokradeł, rolnictwo i zabudowa – podaje komunikat EEA https://www.eea.europa.eu/highlights/healthy-floodplains-have-a-key (znany z wyciągu wyszukiwarki, strony nie otwieraliśmy).
+- Zespół ds. Odbudowy Odporności po Powodzi Komitetu Nauk o Wodzie i Gospodarki Wodnej przy Prezydium PAN (2025), raport po powodzi 2024 (zlewnia Górnej Odry), „Nauka” 4/2025, s. 133–196, DOI 10.24425/nauka.2025.156382: wśród antropogenicznych przyczyn powodzi „nieprzemyślana kanalizacja i regulacja rzek”; zalecenia: retencja glebowa (praktyki rolnicze, ochrona lasów i mokradeł), renaturyzacja rzek, odwrócona melioracja, poldery; w wielu krajach UE rozwiązania techniczne osiągnęły granicę skuteczności. https://nauka-pan.pl/index.php/nauka/article/download/1145/1192/1552 – przeczytane 21.11.2026. Raport wyraża poglądy Komitetu, nie stanowisko PAN.
 - WWF Polska – zbiorniki zaporowe a susza (lokalny efekt, erozja poniżej). https://www.wwf.pl/sites/default/files/inline-files/dlaczego%20zbiorniki%20zaporowe%20nie%20s%C4%85%20dobrym%20narz%C4%99dziem%20w%20walce%20z%20susz%C4%85.pdf
-- OKO.press (cyt. Koalicja Ratujmy Rzeki) – największe powodzie na rzekach uregulowanych; poldery zamiast zbiorników. https://oko.press/w-polsce-wciaz-reguluje-sie-rzeki-ze-szkoda-dla-przyrody-i-bezpieczenstwa
 
 ## Lasy a powódź i susza
 
 - EEA / Climate-ADAPT – potencjał retencyjny lasów Europy. https://climate-adapt.eea.europa.eu/pl/metadata/publications/water-retention-potential-of-europes-forests
-- Nauka w Polsce – list Polskiego Towarzystwa Hydrobiologicznego i Nauki dla Przyrody (gospodarka leśna w obszarach źródliskowych podporządkowana retencji; renaturyzacja). https://polishscience.pl/en/?p=129622
-- Spider's Web – przyczyny powodzi 2024 okiem naukowców (martwe drewno, wykroty, bagienka spowalniają spływ). https://spidersweb.pl/2024/09/powodz-przyczyny-zdanie-naukowcow.html
-- Radio Kraków – stanowisko 16 naukowców: retencja lasów nie zapobiega skutkom ekstremalnych opadów. https://www.radiokrakow.pl/audycje/zarzadzanie-lasami-a-powodz-list-naukowcow/
+- Polish Science (PAP) – list Polskiego Towarzystwa Hydrobiologicznego i Nauki dla Przyrody (gospodarka leśna w obszarach źródliskowych podporządkowana retencji; renaturyzacja). https://polishscience.pl/en/?p=129622
+- IMGW-PIB, Biuletyn PSHM, wrzesień 2024: najwyższa dobowa suma opadu 14 IX – Śnieżnik 218,8 mm; 13 IX Jarnołtówek 161,5 mm; sumy z kilku dni kilkakrotnie przekroczyły miesięczną normę. https://dane.imgw.pl/data/dane_pomiarowo_obserwacyjne/Biuletyn_PSHM/Biuletyn_PSHM_2024_09_(wrzesien).pdf – przeczytane 21.11.2026.
+- Raport zespołu KNoWiGW PAN po powodzi 2024 (jak wyżej) – ochrona lasów i mokradeł jako część retencji glebowej w zlewni.
+
+Usunięte 21.11.2026 jako źródła publicystyczne: OKO.press, Spider's Web, Radio Kraków, Warto Wiedzieć, wywiad PAP. Tez, których nie potwierdziliśmy w publikacjach naukowych (pogłębianie się dna uregulowanych rzek, „największe powodzie na rzekach uregulowanych”, ponad 400 mm w 3–4 dni, stanowisko 16 naukowców), nie ma już w aplikacji.

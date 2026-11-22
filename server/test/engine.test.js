@@ -410,3 +410,12 @@ test('Wyszukiwarka miejsc (Nominatim): województwo przed wsią o tej samej nazw
   assert.equal(cie[0].bbox.length, 4);
   assert.ok(cie[0].bbox[0] < cie[0].bbox[2] && cie[0].bbox[1] < cie[0].bbox[3]);
 });
+
+test('IMGW: odpowiedź "Brak ostrzeżeń" (obiekt zamiast tablicy) nie wywraca raportu', async () => {
+  const { warningsForCounty, hydroWarningsFor } = await import('../src/sources/imgw.js');
+  const none = JSON.parse(fx('imgw-warningsmeteo-brak.json'));
+  assert.ok(!Array.isArray(none) && typeof none.message === 'string');
+  assert.deepEqual(warningsForCounty(none, '3025'), []);
+  assert.deepEqual(hydroWarningsFor(none, 'wielkopolskie'), []);
+  assert.deepEqual(warningsForCounty(null, '3025'), []);
+});

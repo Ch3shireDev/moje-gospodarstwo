@@ -3,7 +3,7 @@ import MapView from './components/MapView.jsx';
 import Report from './components/Report.jsx';
 import DatePicker from './components/DatePicker.jsx';
 import Landing from './components/Landing.jsx';
-import { ChoiceError, FALLBACK_META, fetchMeta, fetchParcel, fetchPlaces, fetchReport, lastReport, savedReports, storage } from './api.js';
+import { ChoiceError, NetworkError, FALLBACK_META, fetchMeta, fetchParcel, fetchPlaces, fetchReport, lastReport, savedReports, storage } from './api.js';
 import { fmtDate, n, parsePlDate } from './format.js';
 
 function useInstallPrompt() {
@@ -161,7 +161,8 @@ export default function App() {
         } else {
           setSelected(null);
           // Nie ma takiej działki – może to nazwa miejsca z numerem ("Sulęcin 387")? Spróbuj samą nazwę.
-          const name = fallbackText?.replace(/[\d_./\\-]+/g, ' ').replace(/\s+/g, ' ').trim();
+          // Przy braku sieci nie ma sensu szukać dalej – od razu komunikat.
+          const name = e instanceof NetworkError ? null : fallbackText?.replace(/[\d_./\\-]+/g, ' ').replace(/\s+/g, ' ').trim();
           if (name && name.length >= 2) findPlaces(name, { notFound: e.message });
           else setError(e.message);
         }
@@ -397,6 +398,11 @@ export default function App() {
           </div>
         </a>
         <div className="topbar-actions">
+          {view !== 'start' && (
+            <button type="button" className="btn-ghost" onClick={() => showStart()} title="Strona tytułowa">
+              ⌂ Start
+            </button>
+          )}
           {view === 'start' && (
             <button type="button" className="btn-ghost" onClick={() => showMap()}>
               Mapa →
@@ -477,7 +483,7 @@ export default function App() {
 
             {/* Zawsze widoczne (także po zwinięciu na telefonie): numer, uprawa, przycisk. */}
             <div className="field">
-              <label htmlFor="search-input">Region lub numer działki</label>
+              <label htmlFor="search-input">Region, miasto lub numer działki</label>
               <div className="search-row">
                 <input
                   id="search-input"
