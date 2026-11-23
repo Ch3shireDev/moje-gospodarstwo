@@ -1,4 +1,4 @@
-package com.getcapacitor.myapp;
+package pl.mojegospodarstwo.app;
 
 import static org.junit.Assert.*;
 

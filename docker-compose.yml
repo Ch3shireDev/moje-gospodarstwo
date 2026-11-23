@@ -8,8 +8,8 @@ services:
       args:
         # Przy 429 z Docker Hub: NODE_IMAGE=mirror.gcr.io/library/node:22-alpine
         NODE_IMAGE: ${NODE_IMAGE:-node:22-alpine}
-    image: zatrzymaj-wode:latest
-    container_name: zatrzymaj-wode
+    image: moje-gospodarstwo:latest
+    container_name: moje-gospodarstwo
     ports:
       - "${PORT:-8787}:8787"
     environment:
